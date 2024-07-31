@@ -1,0 +1,42 @@
+# Python
+__pycache__
+*.pyc
+*.egg-info
+dist
+
+# Log
+*.log
+*.log.*
+# *.json
+*.jsonl
+images/*
+
+# Data
+!**/alpaca-data-conversation.json
+
+# Editor
+.idea
+*.swp
+.github
+.vscode
+
+# Other
+.DS_Store
+wandb
+output
+examples/*
+
+eagle/eval/table/*.json
+eagle/eval/table/results/*.json
+checkpoints
+ckpts*
+slurm_logs/*
+
+datasets/*
+playground/*
+gradio_tmp/*
+
+.ipynb_checkpoints
+*.ipynb
+
+unit_test*.*
