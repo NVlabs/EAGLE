@@ -2,7 +2,11 @@ import os
 import argparse
 import json
 
-from llava.eval.m4c_evaluator import EvalAIAnswerProcessor
+# for debug
+import sys
+sys.path.append(os.getcwd())
+
+from eagle.eval.m4c_evaluator import EvalAIAnswerProcessor
 
 
 def parse_args():
@@ -45,3 +49,5 @@ if __name__ == '__main__':
 
     with open(args.result_upload_file, 'w') as f:
         json.dump(all_answers, f)
+
+    print(f"successfully saving results to {args.result_upload_file}")
