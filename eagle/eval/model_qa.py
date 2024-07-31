@@ -6,8 +6,8 @@ import json
 from tqdm import tqdm
 import shortuuid
 
-from llava.conversation import default_conversation
-from llava.utils import disable_torch_init
+from eagle.conversation import default_conversation
+from eagle.utils import disable_torch_init
 
 
 @torch.inference_mode()

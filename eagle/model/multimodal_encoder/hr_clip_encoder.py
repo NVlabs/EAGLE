@@ -1,5 +1,11 @@
+"""
+Mostly copy-paste from LLaVA-HR
+https://github.com/luogen1996/LLaVA-HR
+"""
+
 import torch
 import torch.nn as nn
+from torch.utils.checkpoint import checkpoint
 
 from transformers import CLIPVisionModel, CLIPImageProcessor, CLIPVisionConfig
 
@@ -62,7 +68,7 @@ def resample_pos_embed(
 
     return posemb
 
-class CLIPVisionTower(nn.Module):
+class HRCLIPVisionTower(nn.Module):
     def __init__(self, vision_tower, args, delay_load=False):
         super().__init__()
 
@@ -72,7 +78,6 @@ class CLIPVisionTower(nn.Module):
         self.vision_tower_name = vision_tower
         self.select_layer = args.mm_vision_select_layer
         self.select_feature = getattr(args, 'mm_vision_select_feature', 'patch')
-
 
         if not delay_load:
             self.load_model()
@@ -85,8 +90,6 @@ class CLIPVisionTower(nn.Module):
         self.vision_tower = CLIPVisionModel.from_pretrained(self.vision_tower_name)
         # checkpointing for clip
         self.vision_tower.vision_model.encoder.gradient_checkpointing =True
-
-
 
         if self.freeze_vision:
             self.vision_tower.requires_grad_(False)
@@ -104,48 +107,25 @@ class CLIPVisionTower(nn.Module):
 
         self.is_loaded = True
 
-    def feature_select(self, image_forward_outs):
+    def forward(self, x):
+        # 448 image input
+        blks = self.vision_tower.vision_model.encoder.layers
+        x = self.vision_tower.vision_model.embeddings(x)
+        x = self.vision_tower.vision_model.pre_layrnorm(x[:, 1:])
 
-        if self.select_layer>100:
-            n_layer=len(image_forward_outs.hidden_states)-1
-            mod_index = max(n_layer // (self.select_layer//100),1)
-            image_features=[]
-            for i in range(n_layer):
-                if  (i+1)% mod_index==0:
-                    image_features.append(image_forward_outs.hidden_states[i+1])
-            image_features=torch.cat(image_features,-1)
-        else:
-            image_features = image_forward_outs.hidden_states[self.select_layer]
-        if self.select_feature == 'patch':
-            image_features = image_features[:, 1:]
-        elif self.select_feature == 'cls_patch':
-            image_features = image_features
-        else:
-            raise ValueError(f'Unexpected select feature: {self.select_feature}')
-        return image_features
+        # inference of fast branch
+        for blk in blks:
+            if self.training:
+                x=checkpoint(
+                    blk.__call__,
+                    x,
+                    None,
+                    None
+                )[0]
+            else:
+                x = blk(x, None, None)[0]
 
-    def forward(self, images):
-        if self.freeze_vision:
-            with torch.no_grad():
-                image_features = self._forward_images(images)
-        else:
-            image_features = self._forward_images(images)
-
-        return image_features
-
-    def _forward_images(self, images):
-        if type(images) is list:
-            image_features = []
-            for image in images:
-                image_forward_out = self.vision_tower(image.to(device=self.device, dtype=self.dtype).unsqueeze(0),
-                                                      output_hidden_states=True)
-                image_feature = self.feature_select(image_forward_out).to(image.dtype)
-                image_features.append(image_feature)
-        else:
-            image_forward_outs = self.vision_tower(images.to(device=self.device, dtype=self.dtype),
-                                                   output_hidden_states=True)
-            image_features = self.feature_select(image_forward_outs).to(images.dtype)
-        return image_features
+        return x
 
     @property
     def dummy_feature(self):

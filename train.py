@@ -23,23 +23,22 @@ import pathlib
 from typing import Dict, Optional, Sequence, List
 
 import torch
+import numpy as np
 
 import transformers
 import tokenizers
 
-from llava.constants import IGNORE_INDEX, IMAGE_TOKEN_INDEX, DEFAULT_IMAGE_TOKEN, DEFAULT_IM_START_TOKEN, DEFAULT_IM_END_TOKEN
+from eagle.constants import IGNORE_INDEX, IMAGE_TOKEN_INDEX, DEFAULT_IMAGE_TOKEN, DEFAULT_IM_START_TOKEN, DEFAULT_IM_END_TOKEN
 from torch.utils.data import Dataset
-from llava.train.llava_trainer import LLaVATrainer
+from eagle.train.eagle_trainer import EagleTrainer
 
-from llava import conversation as conversation_lib
-from llava.model import *
-from llava.mm_utils import tokenizer_image_token
+from eagle import conversation as conversation_lib
+from eagle.model import *
+from eagle.mm_utils import tokenizer_image_token
 
 from PIL import Image
 
-
 local_rank = None
-
 
 def rank0_print(*args):
     if local_rank == 0:
@@ -65,7 +64,6 @@ class ModelArguments:
     mm_patch_merge_type: Optional[str] = field(default='flat')
     mm_vision_select_feature: Optional[str] = field(default="patch")
 
-
 @dataclass
 class DataArguments:
     data_path: str = field(default=None,
@@ -74,7 +72,6 @@ class DataArguments:
     is_multimodal: bool = False
     image_folder: Optional[str] = field(default=None)
     image_aspect_ratio: str = 'square'
-
 
 @dataclass
 class TrainingArguments(transformers.TrainingArguments):
@@ -109,8 +106,9 @@ class TrainingArguments(transformers.TrainingArguments):
     lora_weight_path: str = ""
     lora_bias: str = "none"
     mm_projector_lr: Optional[float] = None
+    vision_tower_layer_decay: Optional[float] = None
+    vision_tower_lr: Optional[float] = None
     group_by_modality_length: bool = field(default=False)
-
 
 def maybe_zero_3(param, ignore_status=False, name=None):
     from deepspeed import zero
@@ -313,6 +311,10 @@ def preprocess_multimodal(
     if not is_multimodal:
         return sources
 
+    # min shi: a temporal hack to fix some sample that does not contain <image> tokens
+    if DEFAULT_IMAGE_TOKEN not in sources[0][0]['value']:
+        sources[0][0]['value'] = DEFAULT_IMAGE_TOKEN + '\n' + sources[0][0]['value']
+
     for source in sources:
         for sentence in source:
             if DEFAULT_IMAGE_TOKEN in sentence['value']:
@@ -472,11 +474,15 @@ def preprocess_v1(
                 instruction_len = len(tokenizer_image_token(parts[0], tokenizer)) - 2
             else:
                 round_len = len(tokenizer(rou).input_ids)
-                instruction_len = len(tokenizer(parts[0]).input_ids) - 2
+                instruction_len = len(tokenizer(parts[0]).input_ids) - 2 # till the last token of user input
 
             if i != 0 and not tokenizer.legacy and IS_TOKENIZER_GREATER_THAN_0_14:
                 round_len -= 1
                 instruction_len -= 1
+            
+            # if "Yi-34B" in tokenizer.name_or_path:
+            #     round_len = round_len + 2
+            #     # instruction_len -= 1
 
             target[cur_len : cur_len + instruction_len] = IGNORE_INDEX
 
@@ -698,7 +704,11 @@ class LazySupervisedDataset(Dataset):
             image_file = self.list_data_dict[i]['image']
             image_folder = self.data_args.image_folder
             processor = self.data_args.image_processor
-            image = Image.open(os.path.join(image_folder, image_file)).convert('RGB')
+            try:
+                image = Image.open(os.path.join(image_folder, image_file)).convert('RGB')
+            except:
+                print(f'image file {os.path.join(image_folder, image_file)} broken.., using a dummy black image instead')
+                image = Image.fromarray(np.zeros((224,224,3), dtype=np.uint8))
             if self.data_args.image_aspect_ratio == 'pad':
                 def expand2square(pil_img, background_color):
                     width, height = pil_img.size
@@ -794,6 +804,7 @@ def train(attn_implementation=None):
     local_rank = training_args.local_rank
     compute_dtype = (torch.float16 if training_args.fp16 else (torch.bfloat16 if training_args.bf16 else torch.float32))
 
+
     bnb_model_from_pretrained_args = {}
     if training_args.bits in [4, 8]:
         from transformers import BitsAndBytesConfig
@@ -814,23 +825,13 @@ def train(attn_implementation=None):
         ))
 
     if model_args.vision_tower is not None:
-        if 'mpt' in model_args.model_name_or_path:
-            config = transformers.AutoConfig.from_pretrained(model_args.model_name_or_path, trust_remote_code=True)
-            config.attn_config['attn_impl'] = training_args.mpt_attn_impl
-            model = LlavaMptForCausalLM.from_pretrained(
-                model_args.model_name_or_path,
-                config=config,
-                cache_dir=training_args.cache_dir,
-                **bnb_model_from_pretrained_args
-            )
-        else:
-            model = LlavaLlamaForCausalLM.from_pretrained(
-                model_args.model_name_or_path,
-                cache_dir=training_args.cache_dir,
-                attn_implementation=attn_implementation,
-                torch_dtype=(torch.bfloat16 if training_args.bf16 else None),
-                **bnb_model_from_pretrained_args
-            )
+        model = EagleLlamaForCausalLM.from_pretrained(
+            model_args.model_name_or_path,
+            cache_dir=training_args.cache_dir,
+            attn_implementation=attn_implementation,
+            torch_dtype=(torch.bfloat16 if training_args.bf16 else None),
+            **bnb_model_from_pretrained_args
+        )
     else:
         model = transformers.LlamaForCausalLM.from_pretrained(
             model_args.model_name_or_path,
@@ -943,6 +944,10 @@ def train(attn_implementation=None):
         model.config.mm_use_im_patch_token = model_args.mm_use_im_patch_token
         model.initialize_vision_tokenizer(model_args, tokenizer=tokenizer)
 
+    for name, param in model.named_parameters():
+        if 'align_stages' in name:
+            param.requires_grad = True
+
     if training_args.bits in [4, 8]:
         from peft.tuners.lora import LoraLayer
         for name, module in model.named_modules():
@@ -956,9 +961,10 @@ def train(attn_implementation=None):
                     if training_args.bf16 and module.weight.dtype == torch.float32:
                         module = module.to(torch.bfloat16)
 
+
     data_module = make_supervised_data_module(tokenizer=tokenizer,
                                               data_args=data_args)
-    trainer = LLaVATrainer(model=model,
+    trainer = EagleTrainer(model=model,
                     tokenizer=tokenizer,
                     args=training_args,
                     **data_module)
@@ -971,20 +977,22 @@ def train(attn_implementation=None):
 
     model.config.use_cache = True
 
-    if training_args.lora_enable:
-        state_dict = get_peft_state_maybe_zero_3(
-            model.named_parameters(), training_args.lora_bias
-        )
-        non_lora_state_dict = get_peft_state_non_lora_maybe_zero_3(
-            model.named_parameters()
-        )
-        if training_args.local_rank == 0 or training_args.local_rank == -1:
-            model.config.save_pretrained(training_args.output_dir)
-            model.save_pretrained(training_args.output_dir, state_dict=state_dict)
-            torch.save(non_lora_state_dict, os.path.join(training_args.output_dir, 'non_lora_trainables.bin'))
-    else:
-        safe_save_model_for_hf_trainer(trainer=trainer,
-                                       output_dir=training_args.output_dir)
+    # if training_args.lora_enable:
+    #     state_dict = get_peft_state_maybe_zero_3(
+    #         model.named_parameters(), training_args.lora_bias
+    #     )
+    #     non_lora_state_dict = get_peft_state_non_lora_maybe_zero_3(
+    #         model.named_parameters()
+    #     )
+    #     if training_args.local_rank == 0 or training_args.local_rank == -1:
+    #         model.config.save_pretrained(training_args.output_dir)
+    #         model.save_pretrained(training_args.output_dir, state_dict=state_dict)
+    #         torch.save(non_lora_state_dict, os.path.join(training_args.output_dir, 'non_lora_trainables.bin'))
+    # else:
+    #     safe_save_model_for_hf_trainer(trainer=trainer,
+    #                                    output_dir=training_args.output_dir)
+    safe_save_model_for_hf_trainer(trainer=trainer,
+                                   output_dir=training_args.output_dir)
 
 
 if __name__ == "__main__":

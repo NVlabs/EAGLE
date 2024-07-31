@@ -21,19 +21,20 @@ import torch.nn as nn
 from .multimodal_encoder.builder import build_vision_tower
 from .multimodal_projector.builder import build_vision_projector
 
-from llava.constants import IGNORE_INDEX, IMAGE_TOKEN_INDEX, DEFAULT_IMAGE_PATCH_TOKEN, DEFAULT_IM_START_TOKEN, DEFAULT_IM_END_TOKEN
+from eagle.constants import IGNORE_INDEX, IMAGE_TOKEN_INDEX, DEFAULT_IMAGE_PATCH_TOKEN, DEFAULT_IM_START_TOKEN, DEFAULT_IM_END_TOKEN
 
-from llava.mm_utils import get_anyres_image_grid_shape
+from eagle.mm_utils import get_anyres_image_grid_shape
 
 
-class LlavaMetaModel:
+class EagleMetaModel:
 
     def __init__(self, config):
-        super(LlavaMetaModel, self).__init__(config)
+        super(EagleMetaModel, self).__init__(config)
 
         if hasattr(config, "mm_vision_tower"):
             self.vision_tower = build_vision_tower(config, delay_load=True)
-            self.mm_projector = build_vision_projector(config)
+            fpn_input_dim = [] if not hasattr(self.vision_tower, "fpn_input_dim") else self.vision_tower.fpn_input_dim
+            self.mm_projector = build_vision_projector(config, fpn_input_dim=fpn_input_dim)
 
             if 'unpad' in getattr(config, 'mm_patch_merge_type', ''):
                 self.image_newline = nn.Parameter(
@@ -76,8 +77,10 @@ class LlavaMetaModel:
         self.config.mm_vision_select_feature = mm_vision_select_feature
         self.config.mm_patch_merge_type = mm_patch_merge_type
 
+
         if getattr(self, 'mm_projector', None) is None:
-            self.mm_projector = build_vision_projector(self.config)
+            fpn_input_dim = [] if not hasattr(self.vision_tower, "fpn_input_dim") else self.vision_tower.fpn_input_dim
+            self.mm_projector = build_vision_projector(self.config, fpn_input_dim=fpn_input_dim)
 
             if 'unpad' in mm_patch_merge_type:
                 embed_std = 1 / torch.sqrt(torch.tensor(self.config.hidden_size, dtype=self.dtype))
@@ -103,7 +106,7 @@ def unpad_image(tensor, original_size):
 
     Args:
     tensor (torch.Tensor): The image tensor, assumed to be in CxHxW format.
-    original_size (tuple): The original size of PIL image (width, height).
+    original_size (tuple): The original size of the image (height, width).
 
     Returns:
     torch.Tensor: The unpadded image tensor.
@@ -128,7 +131,7 @@ def unpad_image(tensor, original_size):
     return unpadded_tensor
 
 
-class LlavaMetaForCausalLM(ABC):
+class EagleMetaForCausalLM(ABC):
 
     @abstractmethod
     def get_model(self):

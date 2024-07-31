@@ -130,7 +130,7 @@ class LengthGroupedSampler(Sampler):
         return iter(indices)
 
 
-class LLaVATrainer(Trainer):
+class EagleTrainer(Trainer):
 
     def _get_train_sampler(self) -> Optional[torch.utils.data.Sampler]:
         if self.train_dataset is None or not has_length(self.train_dataset):
@@ -192,6 +192,59 @@ class LLaVATrainer(Trainer):
                         "lr": self.args.mm_projector_lr,
                     },
                 ]
+            elif self.args.vision_tower_lr:
+                vision_tower_parameters = [name for name, _ in opt_model.named_parameters() if "vision_tower" in name]
+                optimizer_grouped_parameters = [
+                    {
+                        "params": [
+                            p for n, p in opt_model.named_parameters() if (n in decay_parameters and n not in vision_tower_parameters and p.requires_grad)
+                        ],
+                        "weight_decay": self.args.weight_decay,
+                    },
+                    {
+                        "params": [
+                            p for n, p in opt_model.named_parameters() if (n not in decay_parameters and n not in vision_tower_parameters and p.requires_grad)
+                        ],
+                        "weight_decay": 0.0,
+                    },
+                    {
+                        "params": [
+                            p for n, p in opt_model.named_parameters() if (n in decay_parameters and n in vision_tower_parameters and p.requires_grad)
+                        ],
+                        "weight_decay": self.args.weight_decay,
+                        "lr": self.args.vision_tower_lr,
+                    },
+                    {
+                        "params": [
+                            p for n, p in opt_model.named_parameters() if (n not in decay_parameters and n in vision_tower_parameters and p.requires_grad)
+                        ],
+                        "weight_decay": 0.0,
+                        "lr": self.args.vision_tower_lr,
+                    },
+                ]
+
+            elif self.args.vision_tower_layer_decay:
+                vision_tower_param = opt_model.model.vision_tower.get_layer_decay_parameter_group(self.args.learning_rate,
+                                                                                                  self.args.vision_tower_layer_decay, 
+                                                                                                  weight_decay=self.args.weight_decay)
+
+                optimizer_grouped_parameters = [
+                    {
+                        "params": [
+                            p for n, p in opt_model.named_parameters() if (n in decay_parameters and p.requires_grad and ("vision_tower" not in n))
+                        ],
+                        "weight_decay": self.args.weight_decay,
+                    },
+                    {
+                        "params": [
+                            p for n, p in opt_model.named_parameters() if (n not in decay_parameters and p.requires_grad and ("vision_tower" not in n))
+                        ],
+                        "weight_decay": 0.0,
+                    },
+                ]
+
+                optimizer_grouped_parameters.extend(vision_tower_param)
+
             else:
                 optimizer_grouped_parameters = [
                     {
@@ -246,10 +299,10 @@ class LLaVATrainer(Trainer):
                 self.model.config.save_pretrained(output_dir)
                 torch.save(weight_to_save, os.path.join(output_dir, f'mm_projector.bin'))
         else:
-            super(LLaVATrainer, self)._save_checkpoint(model, trial, metrics)
+            super(EagleTrainer, self)._save_checkpoint(model, trial, metrics)
 
     def _save(self, output_dir: Optional[str] = None, state_dict=None):
         if getattr(self.args, 'tune_mm_mlp_adapter', False):
             pass
         else:
-            super(LLaVATrainer, self)._save(output_dir, state_dict)
+            super(EagleTrainer, self)._save(output_dir, state_dict)
