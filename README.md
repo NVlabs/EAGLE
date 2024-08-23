@@ -1,5 +1,5 @@
 <p align="center" width="100%">
-<img src="assets/logo.jpg"  width="80%" height="80%">
+<img src="assets/Logo.png"  width="80%" height="80%">
 </p>
 <!-- # EAGLE: Exploring The Design Space for Multimodal LLMs with Mixture of Encoders -->
 
@@ -201,7 +201,7 @@ TODO
 
 - [LLaVA](https://github.com/haotian-liu/LLaVA): the codebase we built upon. Thanks for the great pioneer open-source project!
 - [LLaVA-HR](https://github.com/luogen1996/LLaVA-HR): we borrow some code on flexible input CLIP encoder from LLaVA-HR!
-- [Cambrian Project](https://cambrian-mllm.github.io): thanks Cambrian project contributors for their efforts in organizing open-source data for us!
+- [Cambrian-1](https://cambrian-mllm.github.io): thanks Cambrian project contributors for their efforts in organizing open-source data for us!
 
 
 
