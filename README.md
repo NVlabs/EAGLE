@@ -22,9 +22,9 @@ Eagle is a family of Vision-Centric High-Resolution Multimodal LLMs. It presents
 - [Later] Models trained on larger and more diverse data.
 - [Later] Evaluation code.
 - [Later] The vision encoder model weights with pre-alignment.
-- [2024/08] 🔥 Release the inference and training code of Eagle. The pretrained model is available at [Model Card](#model-card)
-- [2024/08] 🔥 Release the first version training data of Eagle-1.0 [Eagle-1-1.8M](https://huggingface.co/datasets/shi-labs/eagle-1-1.8M).
-- [2024/08] 🔥 The online demo of Eagle-1.0 13B is available at [Demo](https://huggingface.co/spaces/NVEagle/Eagle-X5-13B-Chat).
+- [2024/08] Release the inference and training code of Eagle. The pretrained model is available at [Model Card](#model-card)
+- [2024/08] Release the first version training data of Eagle-1.0 [Eagle-1-1.8M](https://huggingface.co/datasets/shi-labs/eagle-1-1.8M).
+- [2024/08] The online demo of Eagle-1.0 13B is available at [Demo](https://huggingface.co/spaces/NVEagle/Eagle-X5-13B-Chat).
 
 
 ## Contents
