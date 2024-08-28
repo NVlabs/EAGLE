@@ -183,7 +183,7 @@ If you have limitted GPU resources or memory, please considering the following:
 - use gradient accumulation and reduce the per-device batch size
 
 ## Evaluation
-We are currently organizing the evaluation code and instructions for evaluating the model. In the meantime, you can refer to LLaVA's evaluation guide to assess the model's performance, as we share the same codebase.
+We are currently organizing the evaluation code and instructions for evaluating the model. In the meantime, you can refer to [our evaluation scripts](https://github.com/NVlabs/EAGLE/tree/main/scripts/eval) or LLaVA's evaluation guide to assess the model's performance, as we share the same codebase.
 
 ## Citation
 If you find our project useful, please cite our work using this BibTeX:
