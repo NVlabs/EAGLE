@@ -187,8 +187,16 @@ We are currently organizing the evaluation code and instructions for evaluating 
 
 ## Citation
 If you find our project useful, please cite our work using this BibTeX:
-```bibtex
-TODO
+```
+@misc{shi2024eagleexploringdesignspace,
+      title={Eagle: Exploring The Design Space for Multimodal LLMs with Mixture of Encoders}, 
+      author={Min Shi and Fuxiao Liu and Shihao Wang and Shijia Liao and Subhashree Radhakrishnan and De-An Huang and Hongxu Yin and Karan Sapra and Yaser Yacoob and Humphrey Shi and Bryan Catanzaro and Andrew Tao and Jan Kautz and Zhiding Yu and Guilin Liu},
+      year={2024},
+      eprint={2408.15998},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2408.15998}, 
+}
 ```
 
 
