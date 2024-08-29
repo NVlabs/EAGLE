@@ -220,7 +220,7 @@ You can use the same sumbit code as the pretraining, and use the script in the f
 Before submit the job, you should correctly set the `$PATH_TO_SFT_DATA` and `$PATH_TO_PRETRAINED_PROJECTOR` in each script.
 
 ### Notes
-If you have limitted GPU resources or memory, please considering the following:
+If you have limited GPU resources or memory, please considering the following:
 
 - use `scripts/zero3.json` or `scripts/zero3_offload.json` as the Deepspeed training config instead of the default `zero2.json`
 - use gradient accumulation and reduce the per-device batch size
