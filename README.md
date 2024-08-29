@@ -8,7 +8,7 @@
 [![Code License](https://img.shields.io/badge/Code%20License-Apache_2.0-green.svg)](https://github.com/tatsu-lab/stanford_alpaca/blob/main/LICENSE)
 [![Model License](https://img.shields.io/badge/MODEL%20License-CC%20By%20NC%204.0-red.svg)](MODEL_LICENSE)
 
-[arXiv]([TODO](https://arxiv.org/pdf/2408.15998)) / [HuggingFace](https://huggingface.co/NVEagle) / [Demo](https://huggingface.co/spaces/NVEagle/Eagle-X5-13B-Chat)
+[arXiv](https://arxiv.org/pdf/2408.15998) / [HuggingFace](https://huggingface.co/NVEagle) / [Demo](https://huggingface.co/spaces/NVEagle/Eagle-X5-13B-Chat)
 
 ## Introduction
 
