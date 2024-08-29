@@ -19,12 +19,14 @@ Eagle is a family of Vision-Centric High-Resolution Multimodal LLMs. It presents
 </div>
 
 ## Updates
-- [Later] Models trained on larger and more diverse data.
-- [Later] Evaluation code.
-- [Later] The vision encoder model weights with pre-alignment.
+- [TODO] Models trained on larger and more diverse data.
+- [TODO] Evaluation code.
+- [TODO] The vision encoder model weights with pre-alignment.
 - [2024/08] Release the inference and training code of Eagle. The pretrained model is available at [Model Card](#model-card)
-- [2024/08] Release the first version training data of Eagle-1.0 [Eagle-1-1.8M](https://huggingface.co/datasets/shi-labs/eagle-1-1.8M).
-- [2024/08] The online demo of Eagle-1.0 13B is available at [Demo](https://huggingface.co/spaces/NVEagle/Eagle-X5-13B-Chat).
+- [2024/08] Release the SFT data of Eagle [Eagle-SFT-1.8M](https://huggingface.co/datasets/shi-labs/eagle-1-1.8M).
+- [2024/08] The online demo of Eagle-X5-13B-Chat is available at [Demo](https://huggingface.co/spaces/NVEagle/Eagle-X5-13B-Chat).
+- [2024/06] Winning the 2nd Place in CVPR24 Challenge on Driving with Language [Website](https://opendrivelab.com/challenge2024/#driving_with_language)
+- [2024/05] Serving as the 2D VLM pre-training for [OmniDrive](https://github.com/NVlabs/OmniDrive).
 
 
 ## Contents
@@ -34,6 +36,74 @@ Eagle is a family of Vision-Centric High-Resolution Multimodal LLMs. It presents
 - [Data](#Data)
 - [Train](#train)
 - [Evaluation](#evaluation)
+
+
+## Models & Performance
+Here is the model trained on our organized 1.8M supervised fine-tuning data.
+| Model&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | LLM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Pretrain&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | SFT | GQA | MME | MMMU(Val) | OCR | SQA(I) | POPE | TextVQA | InfoVQA | VizWiz | SEED(I) | VQAv2 | MathVista | MMBench | ChartQA | DocVQA |
+|----------|------------|-----------|-------------|:------:|:-------:|:----------:|:----------:|:---------------:|:------:|:-------------:|:--------------:|:-------------:|:------------:|:------------:|:--------------------:|:---------------:|:---------:|:------------:|
+| [Eagle-X4-7B](https://huggingface.co/NVEagle/Eagle-X4-7B) | Vicuna-7B  |  LLaVA-v1.5    | 1.8M    | 64.8 |  1561 |     34.9 |      540 |          70.5 | 88.4 |        70.9 |         47.4 |        50.8 |       73.4 | 83.4 | 37.3 | 67.8 | 67.5 | 78.8 |
+| [Eagle-X5-7B](https://huggingface.co/NVEagle/Eagle-X5-7B) | Vicuna-7B  |  LLaVA-v1.5    | 1.8M | 64.9 |  1528 |     36.3 |      529 |          69.8 | 88.8 |        71.2 |         47.4 |        54.4 |       73.9 | 83.4 | 37.0 | 68.4 | 67.8 | 78.6 |
+| [Eagle-X4-13B](https://huggingface.co/NVEagle/Eagle-X4-13B) | Vicuna-13B |  LLaVA-v1.5    | 1.8M  | 66.3 |  1627 |     36.9 |      561 |          73.1 | 87.7 |        73.9 |         50.7 |        56.2 |       74.4 | 83.8       |               37.6 |          69.9 |    70.5 |       79.9 |
+| [Eagle-X5-13B](https://huggingface.co/NVEagle/Eagle-X5-13B) | Vicuna-13B |  LLaVA-v1.5    | 1.8M | 66.2 |  1609 |     36.6 |      574 |          72.8 | 87.8 |        74.2 |         51.8 |        59.3 |       74.1 |       83.8 |               38.8 |          69.2 |    69.9 |       79.4 |
+
+
+|            |             | Knowledge |      |      |           |      | General |        |      |      |      |  Document |         |      |         |        | Vision |      |             |
+|------------|----------------|:---------:|:----:|:----:|:---------:|:----:|:-------:|:------:|:----:|:----:|:----:|:----:|:-------:|:----:|:-------:|:------:|:--------------:|:----:|:-----------:|
+|     LLM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    |     Model&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;     | Avg | SQA(I) | MMMU(Val) | MathVista | AI2D | Avg    | MME    | MMB  | SEED | GQA  | Avg | ChartQA | OCR | TextVQA | DocVQA | Avg    | MMVP | RWQA |
+| Llama 3-8B | Mini-Gemini-HD | 55.7      | 75.1 | 37.3 | 37        | 73.5 | 72.7    | 1606   | 72.7 | 73.2 | 64.5 | 62.9 | 59.1    | 47.7 | 70.2    | 74.6   | 40.4           | 18.7 | 62.1        |
+|            | LLaVA-NeXT     | 55.6      | 72.8 | 41.7 | 36.3      | 71.6 | 72.5    | 1604   | 72.1 | 72.7 | 65.2 | 63.9 | 69.5    | 49.0 | 64.6    | 72.6   | 49.4           | 38.7 | 60.1        |
+|            |    Cambrian-1    | 61.3      | 80.4 | 42.7 | 49.0      | 73.0 | 73.1    | 1547   | 75.9 | 74.7 | 64.6 | 71.3 | 73.3    | 62.4 | 71.7    | 77.8   | 57.6           | 51.3 | 64.2        |
+|            | [Ealge-X4-8B-Plus](https://huggingface.co/NVEagle/Ealge-X4-llama3-8B-plus) | 64.2      | 84.3 | 43.4 | 52.7      | 76.1 | 73.8    | 1559   | 75.9 | 76.3 | 64.9 | 76.6 | 80.1    | 62.6 | 77.1    | 86.6   | 69.1           | 71.6 | 66.5        |
+| Vicuna-13B | Mini-Gemini-HD |  54.1      | 71.9 | 37.3 | 37.0      | 70.1 | 70.7    | 1597   | 68.6 | 70.6 | 63.7 | 60.8 | 56.6    | 46.6 | 70.2    | 69.8   | 38.4           | 19.3 | 57.5        |
+|            | LLaVA-NeXT     | 53.7      | 73.5 | 36.2 | 35.1      | 70.0 | 69.9    | 1575   | 70.0 | 65.6 | 65.4 | 62.9 | 62.2    | 51.4 | 67.1    | 70.9   | 47.6           | 36.0 | 59.1        |
+|            |    Cambrian-1    | 60.2      | 79.3 | 40.0 | 48.0      | 73.6 | 73.7    | 1610   | 75.7 | 74.4 | 64.3 | 71.3 | 73.8    | 61.9 | 72.8    | 76.8   | 52.2           | 41.3 | 63.0        |
+|            | [Ealge-X4-13B-Plus](https://huggingface.co/NVEagle/Eagle-X4-Vicuna-13B-plus) | 63.0      | 82.0 | 41.0 | 54.4      | 74.0 | 74.6    | 1651   | 75.7 | 74.8 | 65.3 | 75.1 | 77.6 | 61.9 | 75.5 | 85.4 | 61.4 | 58.0 | 64.8        |
+|   Yi-34B   | Mini-Gemini-HD | 62.4      | 77.7 | 48.0 | 43.4      | 80.5 | 76.2    | 1659   | 80.6 | 75.3 | 65.8 | 68.1 | 67.6    | 51.8 | 74.1    | 78.9   | 52.3           | 37.3 | 67.2        |
+|            | LLaVA-NeXT | 62.5      | 81.8 | 46.7 | 46.5      | 74.9 | 76.0    | 1633   | 79.3 | 75.9 | 67.1 | 67.7 | 68.7    | 54.5 | 69.5    | 78.1   | 54.2           | 47.3 | 61.0        |
+|            |    Cambrian-1    | 67.0      | 85.6 | 49.7 | 53.2      | 79.7 | 76.8    | 1689   | 81.4 | 75.3 | 65.8 | 71.9 | 75.6    | 60.0 | 76.7    | 75.5   | 60.3           | 52.7 | 67.8        |
+|            | [Ealge-X5-34B-Plus](https://huggingface.co/NVEagle/Eagle-X5-Yi-34B-plus) | 68.6      | 85.5 | 51.8 | 57.9      | 79.1 | 76.3    | 1677   | 81.0 | 75.6 | 64.9 | 75.4 | 77.2    | 62.4 | 78.8    | 83.0   | 68.3           | 67.0 | 69.5        |
+
+
+## Visual Examples
+
+### Knowledge & General VQA
+
+<div align="center">
+<img src="assets/visual/VQA1.png" width="80%">
+</div><br>
+
+<div align="center">
+<img src="assets/visual/VQA2.png" width="80%">
+</div><br>
+
+<div align="center">
+<img src="assets/visual/VQA3.png" width="80%">
+</div>
+
+### Autonomous Driving
+
+<div align="center">
+<img src="assets/visual/AV1.png" width="90%">
+</div><br>
+
+<div align="center">
+<img src="assets/visual/AV2.png" width="90%">
+</div>
+
+### Infographic, Chart, OCR & Document Understanding
+
+<div align="center">
+<img src="assets/visual/Doc1.png" width="80%">
+</div><br>
+
+<div align="center">
+<img src="assets/visual/Doc2.png" width="80%">
+</div><br>
+
+<div align="center">
+<img src="assets/visual/Doc3.png" width="80%">
+</div>
 
 
 ## Install
@@ -59,7 +129,7 @@ pip install requirements
 pip install flash-attn --no-build-isolation
 ```
 
-## Data
+## Training Data
 
 ### Pretraining
 We use the same pretraining data as LLaVA v1.5, please download the data from [here](https://huggingface.co/datasets/liuhaotian/LLaVA-CC3M-Pretrain-595K).
@@ -98,40 +168,13 @@ Please provide the pretrained model weights for EVA-02 vision tower pretrained o
 
 The weights of other models, including Vicuna, Segment Anything Model, Pix2Struct, ConvNeXt, and CLIP will be automatically downloaded from huggingface during the first run.
 
-## Demo
+## Gradio Demo
 We set up an online demo [here](https://huggingface.co/spaces/NVEagle/Eagle-X5-13B-Chat). You can also run this demo on your own machine by running:
 ```
 python gradio_demo.py \
     --model-path ${MODEL_CKPT}
     --conv-mode vicuna_v1
 ```
-
-## Model Card
-Here is the model trained on our organized 1.8M supervised fine-tuning data.
-| Name     | LLM     | Pretrain      | SFT         | Checkpoint                                                                                                        | GQA  | MME-P | MMMU-Val | OCRBench | ScienceQA-img | POPE | TextVQA-val | InforVQA-val | VizWiz-test | SEED-Image | VQAv2-test | MathVista-testmini | MMBench-Endev | ChartQA | DocVQA_val |
-|----------|------------|-----------|-------------|-------------------------------------------------------------------------------------------------------------------|------|-------|----------|----------|---------------|------|-------------|--------------|-------------|------------|------------|--------------------|---------------|---------|------------|
-| Eagle-X4 | Vicuna-7B  |  LLaVA v1.5    | 1.8M        | [Eagle-X4-7B](https://huggingface.co/NVEagle/Eagle-X4-7B)                     | 64.8 |  1561 |     34.9 |      540 |          70.5 | 88.4 |        70.9 |         47.4 |        50.8 |       73.4 |       83.4 |               37.3 |          67.8 |    67.5 |       78.8 |
-| Eagle-X5 | Vicuna-7B  |  LLaVA v1.5    | 1.8M        | [Eagle-X5-7B](https://huggingface.co/NVEagle/Eagle-X5-7B)                     | 64.9 |  1528 |     36.3 |      529 |          69.8 | 88.8 |        71.2 |         47.4 |        54.4 |       73.9 |       83.4 |               37.0 |          68.4 |    67.8 |       78.6 |
-| Eagle-X4 | Vicuna-13B |  LLaVA v1.5    | 1.8M        | [Eagle-X4-13B](https://huggingface.co/NVEagle/Eagle-X4-13B)                   | 66.3 |  1627 |     36.9 |      561 |          73.1 | 87.7 |        73.9 |         50.7 |        56.2 |       74.4 | 83.8       |               37.6 |          69.9 |    70.5 |       79.9 |
-| Eagle-X5 | Vicuna-13B |  LLaVA v1.5    | 1.8M        | [Eagle-X5-13B](https://huggingface.co/NVEagle/Eagle-X5-13B)                   | 66.2 |  1609 |     36.6 |      574 |          72.8 | 87.8 |        74.2 |         51.8 |        59.3 |       74.1 |       83.8 |               38.8 |          69.2 |    69.9 |       79.4 |
-
-
-|            |                |             | Knowledge |      |      |           |      | General |        |      |      |      |  OCR |         |      |         |        | Vision-Centric |      |             |
-|------------|----------------|:-----------:|:---------:|:----:|:----:|:---------:|:----:|:-------:|:------:|:----:|:----:|:----:|:----:|:-------:|:----:|:-------:|:------:|:--------------:|:----:|:-----------:|
-|     LLM    |     Method     | Checkpoints | Avg.      | SQA  | MMMU | MathVista | AI2D | Avg.    | MME    | MMB  | SEED | GQA  | Avg. | ChartQA | OCR. | TextVQA | DocVQA | Avg.     | MMVP | RealworldQA |
-| Llama-3-8B | Mini-Gemini-HD | --            | 55.7      | 75.1 | 37.3 | 37        | 73.5 | 72.7    | 1606   | 72.7 | 73.2 | 64.5 | 62.9 | 59.1    | 47.7 | 70.2    | 74.6   | 40.4           | 18.7 | 62.1        |
-|            | LLaVA-NeXT     | --            | 55.6      | 72.8 | 41.7 | 36.3      | 71.6 | 72.5    | 1604   | 72.1 | 72.7 | 65.2 | 63.9 | 69.5    | 49.0 | 64.6    | 72.6   | 49.4           | 38.7 | 60.1        |
-|            |    Cambrian    | --            | 61.3      | 80.4 | 42.7 | 49.0      | 73.0 | 73.1    | 1547   | 75.9 | 74.7 | 64.6 | 71.3 | 73.3    | 62.4 | 71.7    | 77.8   | 57.6           | 51.3 | 64.2        |
-|            | Eagle-X4       | [Ealge-X4-llama3-8B-plus](https://huggingface.co/NVEagle/Ealge-X4-llama3-8B-plus)          | 64.2      | 84.3 | 43.4 | 52.7      | 76.1 | 73.8    | 1559   | 75.9 | 76.3 | 64.9 | 76.6 | 80.1    | 62.6 | 77.1    | 86.6   | 69.1           | 71.6 | 66.5        |
-| Vicuna-13B | Mini-Gemini-HD | --            | 54.1      | 71.9 | 37.3 | 37.0      | 70.1 | 70.7    | 1597   | 68.6 | 70.6 | 63.7 | 60.8 | 56.6    | 46.6 | 70.2    | 69.8   | 38.4           | 19.3 | 57.5        |
-|            | LLaVA-NeXT     | --            | 53.7      | 73.5 | 36.2 | 35.1      | 70.0 | 69.9    | 1575   | 70.0 | 65.6 | 65.4 | 62.9 | 62.2    | 51.4 | 67.1    | 70.9   | 47.6           | 36.0 | 59.1        |
-|            |    Cambrian    | --            | 60.2      | 79.3 | 40.0 | 48.0      | 73.6 | 73.7    | 1610   | 75.7 | 74.4 | 64.3 | 71.3 | 73.8    | 61.9 | 72.8    | 76.8   | 52.2           | 41.3 | 63.0        |
-|            | Eagle-X4       | [Ealge-X4-vicuna-13B-plus](https://huggingface.co/NVEagle/Eagle-X4-Vicuna-13B-plus)           | 63.0      | 82.0 | 41.0 | 54.4      | 74.0 | 74.6    | 1651   | 75.7 | 74.8 | 65.3 | 75.1 | 77.6    | 61.9  | 75.5    | 85.4  | 61.4           | 58.0 | 64.8        |
-|   Yi-34B   | Mini-Gemini-HD | --            | 62.4      | 77.7 | 48.0 | 43.4      | 80.5 | 76.2    | 1659   | 80.6 | 75.3 | 65.8 | 68.1 | 67.6    | 51.8 | 74.1    | 78.9   | 52.3           | 37.3 | 67.2        |
-|            | LLaVA-NeXT     | --            | 62.5      | 81.8 | 46.7 | 46.5      | 74.9 | 76.0    | 1633   | 79.3 | 75.9 | 67.1 | 67.7 | 68.7    | 54.5 | 69.5    | 78.1   | 54.2           | 47.3 | 61.0        |
-|            |    Cambrian    | --            | 67.0      | 85.6 | 49.7 | 53.2      | 79.7 | 76.8    | 1689   | 81.4 | 75.3 | 65.8 | 71.9 | 75.6    | 60.0 | 76.7    | 75.5   | 60.3           | 52.7 | 67.8        |
-|            | Eagle-X5       | [Ealge-X5-Yi-34B-plus](https://huggingface.co/NVEagle/Eagle-X5-Yi-34B-plus)          | 68.6      | 85.5 | 51.8 | 57.9      | 79.1 | 76.3    | 1677   | 81.0 | 75.6 | 64.9 | 75.4 | 77.2    | 62.4 | 78.8    | 83.0   | 68.3           | 67.0 | 69.5        |
-
 
 ## Training
 
@@ -186,16 +229,13 @@ If you have limitted GPU resources or memory, please considering the following:
 We are currently organizing the evaluation code and instructions for evaluating the model. In the meantime, you can refer to [our evaluation scripts](https://github.com/NVlabs/EAGLE/tree/main/scripts/eval) or LLaVA's evaluation guide to assess the model's performance, as we share the same codebase.
 
 ## Citation
-If you find our project useful, please cite our work using this BibTeX:
+If you find this project useful, please cite our work:
 ```
-@misc{shi2024eagleexploringdesignspace,
-      title={Eagle: Exploring The Design Space for Multimodal LLMs with Mixture of Encoders}, 
-      author={Min Shi and Fuxiao Liu and Shihao Wang and Shijia Liao and Subhashree Radhakrishnan and De-An Huang and Hongxu Yin and Karan Sapra and Yaser Yacoob and Humphrey Shi and Bryan Catanzaro and Andrew Tao and Jan Kautz and Zhiding Yu and Guilin Liu},
-      year={2024},
-      eprint={2408.15998},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV},
-      url={https://arxiv.org/abs/2408.15998}, 
+@article{shi2024eagle,
+    title = {Eagle: Exploring The Design Space for Multimodal LLMs with Mixture of Encoders}, 
+    author={Min Shi and Fuxiao Liu and Shihao Wang and Shijia Liao and Subhashree Radhakrishnan and De-An Huang and Hongxu Yin and Karan Sapra and Yaser Yacoob and Humphrey Shi and Bryan Catanzaro and Andrew Tao and Jan Kautz and Zhiding Yu and Guilin Liu},
+    journal={arXiv:2408.15998},
+    year={2024}
 }
 ```
 
