@@ -1,3 +1,5 @@
+# This file is modified from https://github.com/haotian-liu/LLaVA/
+
 import os
 import torch
 import torch.nn as nn

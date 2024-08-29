@@ -1,3 +1,5 @@
+# This file is from https://github.com/haotian-liu/LLaVA/
+
 CONTROLLER_HEART_BEAT_EXPIRATION = 30
 WORKER_HEART_BEAT_INTERVAL = 15
 
