@@ -25,17 +25,19 @@ Eagle is a family of Vision-Centric High-Resolution Multimodal LLMs. It presents
 - [2024/08] Release the inference and training code of Eagle. The pretrained model is available at [Model Card](#model-card)
 - [2024/08] Release the SFT data of Eagle [Eagle-SFT-1.8M](https://huggingface.co/datasets/shi-labs/Eagle-1.8m).
 - [2024/08] The online demo of Eagle-X5-13B-Chat is available at [Demo](https://huggingface.co/spaces/NVEagle/Eagle-X5-13B-Chat).
-- [2024/06] Winning the 2nd Place in CVPR24 Challenge on Driving with Language [Website](https://opendrivelab.com/challenge2024/#driving_with_language)
+- [2024/06] 🏆 Winning the 2nd Place in CVPR24 Challenge on Driving with Language [Website](https://opendrivelab.com/challenge2024/#driving_with_language)
 - [2024/05] Serving as the 2D VLM pre-training for [OmniDrive](https://github.com/NVlabs/OmniDrive).
 
 
 ## Contents
-- [Install](#install)
-- [Pretrained Weights](#model-card)
-- [Demo](#Demo)
-- [Data](#Data)
-- [Train](#train)
-- [Evaluation](#evaluation)
+- [Models & Performance](#Models&Performance)
+- [Visual Examples](#VisualExamples)
+- [Install](#Install)
+- [Training Data](#TrainingData)
+- [Checkpoint Preparation](#CheckpointPreparation)
+- [Training](#Training)
+- [Evaluation](#Evaluation)
+- [Gradio Demo](#GradioDemo)
 
 
 ## Models & Performance
@@ -168,14 +170,6 @@ Please provide the pretrained model weights for EVA-02 vision tower pretrained o
 
 The weights of other models, including Vicuna, Segment Anything Model, Pix2Struct, ConvNeXt, and CLIP will be automatically downloaded from huggingface during the first run.
 
-## Gradio Demo
-We set up an online demo [here](https://huggingface.co/spaces/NVEagle/Eagle-X5-13B-Chat). You can also run this demo on your own machine by running:
-```
-python gradio_demo.py \
-    --model-path ${MODEL_CKPT}
-    --conv-mode vicuna_v1
-```
-
 ## Training
 
 The training process for Eagle follows a standard two-stage approach: pretraining and supervised fine-tuning. In the first stage, only the projector's weights are updated. In the second stage, all parameters are fine-tuned. The batch sizes for the pretraining and fine-tuning stages are 256 and 128, respectively. All settings and hyperparameters are identical to those in LLaVA-v1.5 except that we will unfrozen the vision tower's parameters during the second stage.
@@ -228,6 +222,14 @@ If you have limited GPU resources or memory, please considering the following:
 ## Evaluation
 We are currently organizing the evaluation code and instructions for evaluating the model. In the meantime, you can refer to [our evaluation scripts](https://github.com/NVlabs/EAGLE/tree/main/scripts/eval) or LLaVA's evaluation guide to assess the model's performance, as we share the same codebase.
 
+## Gradio Demo
+We set up an online demo [here](https://huggingface.co/spaces/NVEagle/Eagle-X5-13B-Chat). You can also run this demo on your own machine by running:
+```
+python gradio_demo.py \
+    --model-path ${MODEL_CKPT}
+    --conv-mode vicuna_v1
+```
+
 ## Citation
 If you find this project useful, please cite our work:
 ```
@@ -250,7 +252,4 @@ If you find this project useful, please cite our work:
 - [LLaVA](https://github.com/haotian-liu/LLaVA): the codebase we built upon. Thanks for the great pioneer open-source project!
 - [LLaVA-HR](https://github.com/luogen1996/LLaVA-HR): we borrow some code on flexible input CLIP encoder from LLaVA-HR!
 - [Cambrian-1](https://cambrian-mllm.github.io): thanks Cambrian project contributors for their efforts in organizing open-source data for us!
-
-
-
-
+- Thanks to the [VILA](https://github.com/NVlabs/VILA) team and the [RADIO](https://github.com/NVlabs/RADIO) team for their helps and discussions. Check out these awesome works from NVIDIA!
