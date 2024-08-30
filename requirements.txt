@@ -16,6 +16,7 @@ gradio_client==0.8.1
 requests
 httpx==0.27.0
 uvicorn
+protobuf==3.20.0
 fastapi
 einops==0.6.1
 einops-exts==0.0.4
