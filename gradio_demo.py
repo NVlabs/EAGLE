@@ -47,7 +47,7 @@ argparser.add_argument("--port", default="6324", type=str)
 argparser.add_argument("--model-path", default="NVEagle/Eagle-X5-13B-Chat", type=str)
 argparser.add_argument("--model-base", type=str, default=None)
 argparser.add_argument("--num-gpus", type=int, default=1)
-argparser.add_argument("--conv-mode", type="vicuna_v1", default=None)
+argparser.add_argument("--conv-mode", type=str, default="vicuna_v1",)
 argparser.add_argument("--temperature", type=float, default=0.2)
 argparser.add_argument("--max-new-tokens", type=int, default=512)
 argparser.add_argument("--num_frames", type=int, default=16)
@@ -187,7 +187,7 @@ txt = gr.Textbox(
 
 title_markdown = ("""
 # Eagle: Exploring The Design Space for Multimodal LLMs with Mixture of Encoders
-[[Project Page](TODO)] [[Code](TODO)] [[Model](TODO)] | 📚 [[Arxiv](TODO)]]
+[[Code](https://github.com/NVlabs/EAGLE)] [[Model](https://huggingface.co/NVEagle)] | 📚 [[Arxiv](https://arxiv.org/pdf/2408.15998)]]
 """)
 
 tos_markdown = ("""
