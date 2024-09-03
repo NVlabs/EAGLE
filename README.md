@@ -142,7 +142,7 @@ After cloning this dataset, please run the following commands to extract all the
 ```
 cd Eagle-1.8M
 cat images.tar.part_* > images.tar.gz
-tar -xvzf images.tar.gz
+tar -xvf images.tar.gz
 ```
 
 Please note that while the images have been packaged for convenience, the original dataset licenses remain unchanged. By downloading our data, you agree to the licensing terms of each source dataset. A detailed list of the data sources used in our fine-tuning data mixture is provided below:
