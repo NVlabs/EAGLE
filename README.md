@@ -231,7 +231,7 @@ python gradio_demo.py \
 ```
 
 ## Inference 
-Our one sample inference code is [here](https://github.com/NVlabs/EAGLE/tree/main/predict_demo.py). You can set you own 'image_path' [here](https://github.com/NVlabs/EAGLE/tree/main/predict_demo.py/#L38) and 'question' [here](https://github.com/NVlabs/EAGLE/tree/main/predict_demo.py/#L39).
+Our inference code is [here](https://github.com/NVlabs/EAGLE/tree/main/predict_demo.py). You can set you own 'image_path' [here](https://github.com/NVlabs/EAGLE/tree/main/predict_demo.py/#L38) and 'question' [here](https://github.com/NVlabs/EAGLE/tree/main/predict_demo.py/#L39).
 ```
 python predict_demo.py
 ```
