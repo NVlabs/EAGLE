@@ -230,6 +230,13 @@ python gradio_demo.py \
     --conv-mode vicuna_v1
 ```
 
+## Inference 
+Our one sample inference code is [here](https://github.com/NVlabs/EAGLE/tree/main/predict_demo.py). You can set you own 'image_path' [here](https://github.com/NVlabs/EAGLE/tree/main/predict_demo.py/#L38) and 'question' [here](https://github.com/NVlabs/EAGLE/tree/main/predict_demo.py/#L39).
+```
+python predict_demo.py
+```
+
+
 ## Citation
 If you find this project useful, please cite our work:
 ```
