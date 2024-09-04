@@ -233,38 +233,18 @@ python gradio_demo.py \
 ## Inference 
 Our inference code is [here](https://github.com/NVlabs/EAGLE/tree/main/predict_demo.py). You can set you own 'image_path' [here](https://github.com/NVlabs/EAGLE/tree/main/predict_demo.py/#L38) and 'question' [here](https://github.com/NVlabs/EAGLE/tree/main/predict_demo.py/#L39).
 ```
-# Copyright 2024 NVIDIA CORPORATION & AFFILIATES
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# A simple reference example of using eagle model
-
 import os
 import torch
 import numpy as np
-
 from eagle import conversation as conversation_lib
 from eagle.constants import DEFAULT_IMAGE_TOKEN
-
 from eagle.constants import IMAGE_TOKEN_INDEX, DEFAULT_IMAGE_TOKEN, DEFAULT_IM_START_TOKEN, DEFAULT_IM_END_TOKEN
 from eagle.conversation import conv_templates, SeparatorStyle
 from eagle.model.builder import load_pretrained_model
 from eagle.utils import disable_torch_init
 from eagle.mm_utils import tokenizer_image_token, get_model_name_from_path, process_images, KeywordsStoppingCriteria
-
 from PIL import Image
 import argparse
-
 from transformers import TextIteratorStreamer
 from threading import Thread
 
