@@ -254,12 +254,7 @@ image_path = "assets/georgia-tech.jpeg"
 input_prompt = "Describe this image."
 
 model_name = get_model_name_from_path(model_path)
-tokenizer, model, image_processor, context_len = load_pretrained_model(model_path, 
-                                                                       None, 
-                                                                       model_name, 
-                                                                       False, 
-                                                                       False)
-
+tokenizer, model, image_processor, context_len = load_pretrained_model(model_path,None,model_name,False,False)
 if model.config.mm_use_im_start_end:
     input_prompt = DEFAULT_IM_START_TOKEN + DEFAULT_IMAGE_TOKEN + DEFAULT_IM_END_TOKEN + '\n' + input_prompt
 else:
