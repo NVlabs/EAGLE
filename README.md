@@ -130,7 +130,7 @@ pip install -r requirements.txt
 ```
 pip install flash-attn --no-build-isolation
 ```
-
+If you have any questions about the environment setup, please follow the instruction videos from [video](https://www.youtube.com/watch?si=20yjQlthlKPTC87s&v=0-md0S9GDJA&feature=youtu.be).
 ## Training Data
 
 ### Pretraining
