@@ -30,7 +30,7 @@ Eagle is a family of Vision-Centric High-Resolution Multimodal LLMs. It presents
 
 
 ## Contents
-- [Models & Performance](#Models&Performance)
+- [Models & Performance](#Models)
 - [Visual Examples](#VisualExamples)
 - [Install](#Install)
 - [Training Data](#TrainingData)
