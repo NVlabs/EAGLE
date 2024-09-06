@@ -16,7 +16,7 @@ python -m torch.distributed.run \
     --master_addr $MASTER_ADDR --master_port 25031 \
     train_mem.py \
     --deepspeed ./scripts/zero2.json \
-    --model_name_or_path lmsys/vicuna-7b-v1.5 \
+    --model_name_or_path meta-llama/Meta-Llama-3-8B-Instruct \
     --version plain \
     --data_path $PATH_TO_PRETRAINING_DATA/blip_laion_cc_sbu_558k.json \
     --image_folder $PATH_TO_PRETRAINING_DATA/images \

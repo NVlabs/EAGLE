@@ -15,7 +15,7 @@ python -m torch.distributed.run \
     --master_addr $MASTER_ADDR --master_port 25031 \
     train_mem.py \
     --deepspeed ./scripts/zero2.json \
-    --model_name_or_path checkpoints/pretrain-7b-llava-eaglex5-cambrianpt-vlr2e-5.sh \
+    --model_name_or_path lmsys/vicuna-7b-v1.5 \
     --version v1 \
     --data_path $PATH_TO_SFT_DATA/eagle-sft-v1-1_8m.json \
     --image_folder $PATH_TO_SFT_DATA/images \

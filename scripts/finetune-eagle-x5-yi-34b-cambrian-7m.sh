@@ -1,7 +1,7 @@
 #!/bin/bash
 NAME=$1
 
-# export WANDB_DISABLED="true"
+# We fine-tune this model on 256 A100 GPU
 export WANDB_PROJECT="eagle"
 export WANDB_RUN_ID=${NAME}
 export WANDB_RESUME="allow"
@@ -15,28 +15,30 @@ python -m torch.distributed.run \
     --nproc_per_node 8 --nnodes $SLURM_NNODES --node_rank $SLURM_PROCID \
     --master_addr $MASTER_ADDR --master_port 25031 \
     train_mem.py \
-    --deepspeed ./scripts/zero2.json \
-    --model_name_or_path lmsys/vicuna-7b-v1.5 \
-    --version plain \
-    --data_path $PATH_TO_PRETRAINING_DATA/blip_laion_cc_sbu_558k.json \
-    --image_folder $PATH_TO_PRETRAINING_DATA/images \
+    --deepspeed ./scripts/zero3.json \
+    --model_name_or_path NousResearch/Nous-Hermes-2-Yi-34B \
+    --version v1 \
+    --data_path $PATH_TO_CAMBRIAN_SFT_DATA \
+    --image_folder $PATH_TO_CAMBRIAN_SFT_DATA \
     --vision_tower "clip-448;convnext-1024;sam-1024;det-1024;pix2struct-1024" \
+    --pretrain_mm_mlp_adapter $PATH_TO_PRETRAINED_PROJECTOR/mm_projector.bin \
     --mm_projector_type mlp2x_gelu \
-    --tune_mm_mlp_adapter True \
     --mm_vision_select_layer -2 \
     --mm_use_im_start_end False \
     --mm_use_im_patch_token False \
+    --image_aspect_ratio pad \
+    --group_by_modality_length True \
     --bf16 True \
     --output_dir ./checkpoints/$NAME \
     --num_train_epochs 1 \
-    --per_device_train_batch_size 8 \
+    --per_device_train_batch_size 4 \
     --per_device_eval_batch_size 4 \
     --gradient_accumulation_steps 1 \
     --evaluation_strategy "no" \
     --save_strategy "steps" \
-    --save_steps 24000 \
+    --save_steps 500 \
     --save_total_limit 1 \
-    --learning_rate 1e-3 \
+    --learning_rate 2e-5 \
     --weight_decay 0. \
     --warmup_ratio 0.03 \
     --lr_scheduler_type "cosine" \
@@ -47,4 +49,4 @@ python -m torch.distributed.run \
     --dataloader_num_workers 4 \
     --lazy_preprocess True \
     --report_to wandb \
-    --run_name ${NAME}
+    --run_name ${NAME}  

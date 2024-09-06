@@ -1,5 +1,6 @@
 #!/bin/bash
 NAME=$1
+# We use 128 GPU to pretrain the Yi-34B model, the total batch size is 1024.
 
 # export WANDB_DISABLED="true"
 export WANDB_PROJECT="eagle"
@@ -15,11 +16,11 @@ python -m torch.distributed.run \
     --nproc_per_node 8 --nnodes $SLURM_NNODES --node_rank $SLURM_PROCID \
     --master_addr $MASTER_ADDR --master_port 25031 \
     train_mem.py \
-    --deepspeed ./scripts/zero2.json \
-    --model_name_or_path lmsys/vicuna-7b-v1.5 \
+    --deepspeed ./scripts/zero3.json \
+    --model_name_or_path NousResearch/Nous-Hermes-2-Yi-34B \
     --version plain \
-    --data_path $PATH_TO_PRETRAINING_DATA/blip_laion_cc_sbu_558k.json \
-    --image_folder $PATH_TO_PRETRAINING_DATA/images \
+    --data_path $PATH_TO_CAMBRIAN_PRETRAINING_DATA \
+    --image_folder $PATH_TO_CAMBRIAN_PRETRAINING_DATA \
     --vision_tower "clip-448;convnext-1024;sam-1024;det-1024;pix2struct-1024" \
     --mm_projector_type mlp2x_gelu \
     --tune_mm_mlp_adapter True \
@@ -36,7 +37,7 @@ python -m torch.distributed.run \
     --save_strategy "steps" \
     --save_steps 24000 \
     --save_total_limit 1 \
-    --learning_rate 1e-3 \
+    --learning_rate 2e-4 \
     --weight_decay 0. \
     --warmup_ratio 0.03 \
     --lr_scheduler_type "cosine" \
