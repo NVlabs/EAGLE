@@ -30,7 +30,7 @@ Eagle is a family of Vision-Centric High-Resolution Multimodal LLMs. It presents
 
 
 ## Contents
-- [Models & Performance](#Models&Performance)
+- [Models & Performance](#Models)
 - [Visual Examples](#VisualExamples)
 - [Install](#Install)
 - [Training Data](#TrainingData)
@@ -130,7 +130,7 @@ pip install -r requirements.txt
 ```
 pip install flash-attn --no-build-isolation
 ```
-
+If you have any questions about the environment setup, please follow the instruction [video](https://www.youtube.com/watch?si=20yjQlthlKPTC87s&v=0-md0S9GDJA&feature=youtu.be).
 ## Training Data
 
 ### Pretraining
@@ -229,6 +229,65 @@ python gradio_demo.py \
     --model-path ${MODEL_CKPT}
     --conv-mode vicuna_v1
 ```
+
+## Inference 
+Our inference code is [here](https://github.com/NVlabs/EAGLE/tree/main/predict_demo.py). You can set you own 'image_path' [here](https://github.com/NVlabs/EAGLE/tree/main/predict_demo.py/#L38) and 'question' [here](https://github.com/NVlabs/EAGLE/tree/main/predict_demo.py/#L39).
+```
+import os
+import torch
+import numpy as np
+from eagle import conversation as conversation_lib
+from eagle.constants import DEFAULT_IMAGE_TOKEN
+from eagle.constants import IMAGE_TOKEN_INDEX, DEFAULT_IMAGE_TOKEN, DEFAULT_IM_START_TOKEN, DEFAULT_IM_END_TOKEN
+from eagle.conversation import conv_templates, SeparatorStyle
+from eagle.model.builder import load_pretrained_model
+from eagle.utils import disable_torch_init
+from eagle.mm_utils import tokenizer_image_token, get_model_name_from_path, process_images, KeywordsStoppingCriteria
+from PIL import Image
+import argparse
+from transformers import TextIteratorStreamer
+from threading import Thread
+
+model_path = "NVEagle/Eagle-X5-13B-Chat"
+conv_mode = "vicuna_v1"
+image_path = "assets/georgia-tech.jpeg"
+input_prompt = "Describe this image."
+
+model_name = get_model_name_from_path(model_path)
+tokenizer, model, image_processor, context_len = load_pretrained_model(model_path,None,model_name,False,False)
+if model.config.mm_use_im_start_end:
+    input_prompt = DEFAULT_IM_START_TOKEN + DEFAULT_IMAGE_TOKEN + DEFAULT_IM_END_TOKEN + '\n' + input_prompt
+else:
+    input_prompt = DEFAULT_IMAGE_TOKEN + '\n' + input_prompt
+
+conv = conv_templates[conv_mode].copy()
+conv.append_message(conv.roles[0], input_prompt)
+conv.append_message(conv.roles[1], None)
+prompt = conv.get_prompt()
+
+image = Image.open(image_path).convert('RGB')
+image_tensor = process_images([image], image_processor, model.config)[0]
+input_ids = tokenizer_image_token(prompt, tokenizer, IMAGE_TOKEN_INDEX, return_tensors='pt')
+
+input_ids = input_ids.to(device='cuda', non_blocking=True)
+image_tensor = image_tensor.to(dtype=torch.float16, device='cuda', non_blocking=True)
+
+with torch.inference_mode():
+    output_ids = model.generate(
+        input_ids.unsqueeze(0),
+        images=image_tensor.unsqueeze(0),
+        image_sizes=[image.size],
+        do_sample=True,
+        temperature=0.2,
+        top_p=0.5,
+        num_beams=1,
+        max_new_tokens=256,
+        use_cache=True)
+
+outputs = tokenizer.batch_decode(output_ids, skip_special_tokens=True)[0].strip()
+print(f"Image:{image_path} \nPrompt:{input_prompt} \nOutput:{outputs}")
+```
+
 
 ## Citation
 If you find this project useful, please cite our work:
