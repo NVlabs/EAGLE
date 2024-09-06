@@ -385,6 +385,27 @@ Answer the questions.""",
     sep="<|im_end|>",
 )
 
+conv_yi34b_chatml_direct = Conversation(
+    system="""<|im_start|>system
+Answer the questions.""",
+    roles=("<|im_start|>user\n", "<|im_start|>assistant\n"),
+    version="mpt-yi-34b",
+    messages=(),
+    offset=0,
+    sep_style=SeparatorStyle.MPT,
+    sep="<|im_end|>",
+)
+
+conv_llama3 = Conversation(
+    system="""<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nA chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions.""",
+    roles=("<|start_header_id|>user<|end_header_id|>\n\n", "<|start_header_id|>assistant<|end_header_id|>\n\n"),
+    version="llama3",
+    messages=(),
+    offset=0,
+    sep_style=SeparatorStyle.MPT,
+    sep="<|eot_id|>",
+)
+
 default_conversation = conv_vicuna_v1
 conv_templates = {
     "default": conv_vicuna_v0,
@@ -394,6 +415,7 @@ conv_templates = {
     "llama_2": conv_llama_2,
     "mistral_instruct": conv_mistral_instruct,
     "chatml_direct": conv_chatml_direct,
+    "yi_34b_chatml_direct": conv_yi34b_chatml_direct,
     "mistral_direct": conv_chatml_direct,
 
     "plain": conv_llava_plain,
@@ -405,6 +427,7 @@ conv_templates = {
     "llava_llama_2": conv_llava_llama_2,
 
     "mpt": conv_mpt,
+    "llama3": conv_llama3
 }
 
 
