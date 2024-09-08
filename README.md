@@ -30,14 +30,14 @@ Eagle is a family of Vision-Centric High-Resolution Multimodal LLMs. It presents
 
 
 ## Contents
-- [Models & Performance](#Models)
-- [Visual Examples](#VisualExamples)
-- [Install](#Install)
-- [Training Data](#TrainingData)
-- [Checkpoint Preparation](#CheckpointPreparation)
-- [Training](#Training)
-- [Evaluation](#Evaluation)
-- [Gradio Demo](#GradioDemo)
+- [Models & Performance](#models--performance)
+- [Visual Examples](#visual-examples)
+- [Install](#install)
+- [Training Data](#training-data)
+- [Checkpoint Preparation](#checkpoint-preparation)
+- [Training](#training)
+- [Evaluation](#evaluation)
+- [Gradio Demo](#gradio-demo)
 
 
 ## Models & Performance
@@ -56,15 +56,15 @@ Here is the model trained on our organized 1.8M supervised fine-tuning data.
 | Llama 3-8B | Mini-Gemini-HD | 55.7      | 75.1 | 37.3 | 37        | 73.5 | 72.7    | 1606   | 72.7 | 73.2 | 64.5 | 62.9 | 59.1    | 47.7 | 70.2    | 74.6   | 40.4           | 18.7 | 62.1        |
 |            | LLaVA-NeXT     | 55.6      | 72.8 | 41.7 | 36.3      | 71.6 | 72.5    | 1604   | 72.1 | 72.7 | 65.2 | 63.9 | 69.5    | 49.0 | 64.6    | 72.6   | 49.4           | 38.7 | 60.1        |
 |            |    Cambrian-1    | 61.3      | 80.4 | 42.7 | 49.0      | 73.0 | 73.1    | 1547   | 75.9 | 74.7 | 64.6 | 71.3 | 73.3    | 62.4 | 71.7    | 77.8   | 57.6           | 51.3 | 64.2        |
-|            | [Ealge-X4-8B-Plus](https://huggingface.co/NVEagle/Ealge-X4-llama3-8B-plus) | 64.2      | 84.3 | 43.4 | 52.7      | 76.1 | 73.8    | 1559   | 75.9 | 76.3 | 64.9 | 76.6 | 80.1    | 62.6 | 77.1    | 86.6   | 69.1           | 71.6 | 66.5        |
+|            | [Ealge-X4-8B-Plus](https://huggingface.co/NVEagle/Eagle-X4-8B-Plus) | 64.2      | 84.3 | 43.4 | 52.7      | 76.1 | 73.8    | 1559   | 75.9 | 76.3 | 64.9 | 76.6 | 80.1    | 62.6 | 77.1    | 86.6   | 69.1           | 71.6 | 66.5        |
 | Vicuna-13B | Mini-Gemini-HD |  54.1      | 71.9 | 37.3 | 37.0      | 70.1 | 70.7    | 1597   | 68.6 | 70.6 | 63.7 | 60.8 | 56.6    | 46.6 | 70.2    | 69.8   | 38.4           | 19.3 | 57.5        |
 |            | LLaVA-NeXT     | 53.7      | 73.5 | 36.2 | 35.1      | 70.0 | 69.9    | 1575   | 70.0 | 65.6 | 65.4 | 62.9 | 62.2    | 51.4 | 67.1    | 70.9   | 47.6           | 36.0 | 59.1        |
 |            |    Cambrian-1    | 60.2      | 79.3 | 40.0 | 48.0      | 73.6 | 73.7    | 1610   | 75.7 | 74.4 | 64.3 | 71.3 | 73.8    | 61.9 | 72.8    | 76.8   | 52.2           | 41.3 | 63.0        |
-|            | [Ealge-X4-13B-Plus](https://huggingface.co/NVEagle/Eagle-X4-Vicuna-13B-plus) | 63.0      | 82.0 | 41.0 | 54.4      | 74.0 | 74.6    | 1651   | 75.7 | 74.8 | 65.3 | 75.1 | 77.6 | 61.9 | 75.5 | 85.4 | 61.4 | 58.0 | 64.8        |
+|            | [Ealge-X4-13B-Plus](https://huggingface.co/NVEagle/Eagle-X4-13B-Plus) | 63.0      | 82.0 | 41.0 | 54.4      | 74.0 | 74.6    | 1651   | 75.7 | 74.8 | 65.3 | 75.1 | 77.6 | 61.9 | 75.5 | 85.4 | 61.4 | 58.0 | 64.8        |
 |   Yi-34B   | Mini-Gemini-HD | 62.4      | 77.7 | 48.0 | 43.4      | 80.5 | 76.2    | 1659   | 80.6 | 75.3 | 65.8 | 68.1 | 67.6    | 51.8 | 74.1    | 78.9   | 52.3           | 37.3 | 67.2        |
 |            | LLaVA-NeXT | 62.5      | 81.8 | 46.7 | 46.5      | 74.9 | 76.0    | 1633   | 79.3 | 75.9 | 67.1 | 67.7 | 68.7    | 54.5 | 69.5    | 78.1   | 54.2           | 47.3 | 61.0        |
 |            |    Cambrian-1    | 67.0      | 85.6 | 49.7 | 53.2      | 79.7 | 76.8    | 1689   | 81.4 | 75.3 | 65.8 | 71.9 | 75.6    | 60.0 | 76.7    | 75.5   | 60.3           | 52.7 | 67.8        |
-|            | [Ealge-X5-34B-Plus](https://huggingface.co/NVEagle/Eagle-X5-Yi-34B-plus) | 68.6      | 85.5 | 51.8 | 57.9      | 79.1 | 76.3    | 1677   | 81.0 | 75.6 | 64.9 | 75.4 | 77.2    | 62.4 | 78.8    | 83.0   | 68.3           | 67.0 | 69.5        |
+|            | [Ealge-X5-34B-Plus](https://huggingface.co/NVEagle/Eagle-X5-34B-Plus) | 68.6      | 85.5 | 51.8 | 57.9      | 79.1 | 76.3    | 1677   | 81.0 | 75.6 | 64.9 | 75.4 | 77.2    | 62.4 | 78.8    | 83.0   | 68.3           | 67.0 | 69.5        |
 
 
 ## Visual Examples
