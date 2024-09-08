@@ -17,7 +17,7 @@ python -m torch.distributed.run \
     train_mem.py \
     --deepspeed ./scripts/zero3.json \
     --model_name_or_path NousResearch/Nous-Hermes-2-Yi-34B \
-    --version v1 \
+    --version yi_34b_chatml_direct \
     --data_path $PATH_TO_CAMBRIAN_SFT_DATA \
     --image_folder $PATH_TO_CAMBRIAN_SFT_DATA \
     --vision_tower "clip-448;convnext-1024;sam-1024;det-1024;pix2struct-1024" \
