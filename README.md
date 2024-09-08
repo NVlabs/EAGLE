@@ -220,7 +220,16 @@ If you have limited GPU resources or memory, please considering the following:
 - use gradient accumulation and reduce the per-device batch size
 
 ## Evaluation
-We are currently organizing the evaluation code and instructions for evaluating the model. In the meantime, you can refer to [our evaluation scripts](https://github.com/NVlabs/EAGLE/tree/main/scripts/eval) or LLaVA's evaluation guide to assess the model's performance, as we share the same codebase.
+
+### Evaluation with LMMs-Eval
+We evaluate MME, MMBench, SEED, MathVista, POPE, ScienceQA, GQA, OCRBench, TextVQA, and ChartQA using [LMMs-Eval](https://github.com/EvolvingLMMs-Lab/lmms-eval). For better reproducibility, we have included the specific version we used in this repository. Please follow their guidelines and use the following commands to perform the evaluation:
+
+```bash
+bash scripts/eval_lmms_eval/eval-mme-seed-mmmu-pope-sqa-gqa-ocrbench-textvqa-chartqa.sh $REPO_ID_OR_LOCAL_PATH $MODEL_NAME $CONV_MODE
+# MODEL_NAME can be any name, just to dinstinguish different runs.
+# CONV_MODE should be the name of the conversation template during triaining, i.e., "vicuna_v1" for Vicuna, "llama3" for Llama3, and "yi_34b_chatml_direct" for Yi-34B.
+```
+
 
 ## Gradio Demo
 We set up an online demo [here](https://huggingface.co/spaces/NVEagle/Eagle-X5-13B-Chat). You can also run this demo on your own machine by running:
@@ -309,6 +318,7 @@ If you find this project useful, please cite our work:
 ## Acknowledgement
 
 - [LLaVA](https://github.com/haotian-liu/LLaVA): the codebase we built upon. Thanks for the great pioneer open-source project!
+- [LMMs-Eval](https://github.com/EvolvingLMMs-Lab/lmms-eval): many thanks to the LMMs-Lab for their wonderful and easy-to-use evaluation tools!
 - [LLaVA-HR](https://github.com/luogen1996/LLaVA-HR): we borrow some code on flexible input CLIP encoder from LLaVA-HR!
 - [Cambrian-1](https://cambrian-mllm.github.io): thanks Cambrian project contributors for their efforts in organizing open-source data for us!
 - Thanks to the [VILA](https://github.com/NVlabs/VILA) team and the [RADIO](https://github.com/NVlabs/RADIO) team for their helps and discussions. Check out these awesome works from NVIDIA!
