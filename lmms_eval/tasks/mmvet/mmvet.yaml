@@ -1,0 +1,33 @@
+dataset_path: lmms-lab/MMVet
+dataset_kwargs:
+  token: True
+task: "mmvet"
+test_split: test
+output_type: generate_until
+doc_to_visual: !function utils.mmvet_doc_to_visual
+doc_to_text: !function utils.doc_to_text # Such that {{question}} will be replaced by doc["question"]
+doc_to_target: "{{answer}}"
+generation_kwargs:
+  until:
+    - "ASSISTANT:"
+  max_new_tokens: 1024
+  temperature: 0
+  top_p: 0
+  num_beams: 1
+  do_sample: false
+process_results: !function utils.mmvet_process_results # apply gpt eval here
+metric_list:
+  - metric: gpt_eval_score
+    aggregation: !function utils.mmvet_aggregate_results
+    higher_is_better: true
+metadata:
+  version: 0.0
+  # gpt_eval_model_name: "gpt-4-0613"
+  # gpt_eval_model_name: "gpt-4-0125-preview"
+  # gpt_eval_model_name: "gpt-4o-2024-05-13"
+  gpt_eval_model_name: "gpt-4"  
+  # gpt_eval_model_name: "gpt-3.5-turbo-0613"
+model_specific_prompt_kwargs:
+  default:
+    pre_prompt: ""
+    post_prompt: ""
