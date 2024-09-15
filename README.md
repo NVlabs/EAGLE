@@ -125,6 +125,7 @@ conda create -n eagle python=3.10 -y
 conda activate eagle
 pip install --upgrade pip  # enable PEP 660 support
 pip install -r requirements.txt
+pip install .
 ```
 
 3. Install additional packages for training cases
