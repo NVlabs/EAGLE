@@ -8,8 +8,9 @@
 [![Code License](https://img.shields.io/badge/Code%20License-Apache_2.0-green.svg)](https://github.com/tatsu-lab/stanford_alpaca/blob/main/LICENSE)
 [![Model License](https://img.shields.io/badge/MODEL%20License-CC%20By%20NC%204.0-red.svg)](MODEL_LICENSE)
 
-📢[[arXiv](https://arxiv.org/pdf/2408.15998)] [[HuggingFace](https://huggingface.co/papers/2408.15998)] [[Demo](https://huggingface.co/spaces/NVEagle/Eagle-X5-13B-Chat)] 
+[[arXiv](https://arxiv.org/pdf/2408.15998)] [[HuggingFace](https://huggingface.co/papers/2408.15998)] [[Demo](https://huggingface.co/spaces/NVEagle/Eagle-X5-13B-Chat)] 
 [[Model Zoo](https://huggingface.co/NVEagle)] [[Data](https://huggingface.co/datasets/shi-labs/Eagle-1.8M)]
+
 
 ## Introduction
 
@@ -19,14 +20,16 @@ Eagle is a family of Vision-Centric High-Resolution Multimodal LLMs. It presents
 <img src="assets/fig-teaser.jpg" width="90%">
 </div>
 
+
 ## Release
 - [TODO] Vision encoder model weights with pre-alignment.
-- [2024/09] Our [Eagle-8B-Plus](https://huggingface.co/NVEagle/Eagle-X4-8B-Plus) and [Eagle-34B-Plus](https://huggingface.co/NVEagle/Eagle-X5-34B-Plus) are released on huggingface.
-- [2024/09] Evaluation code [Here](#evaluation).
+- [2024/09] Release models trained on the [Cambrian-1](https://huggingface.co/collections/nyu-visionx/cambrian-data-6667ce801e179b4fbe774e11) data.
+- [2024/09] Provide an [example](#evaluation) for evaluation.
+- [2024/08] Release the Eagle-X5-13B-Chat online [demo](https://huggingface.co/spaces/NVEagle/Eagle-X5-13B-Chat).
+- [2024/08] Release the [Eagle-SFT-1.8M](https://huggingface.co/datasets/shi-labs/Eagle-1.8m) data.
+- [2024/08] Release models trained on the [LLaVA-1.5 Pre-train](https://huggingface.co/datasets/liuhaotian/LLaVA-Pretrain) and [Eagle-SFT-1.8M](https://huggingface.co/datasets/shi-labs/Eagle-1.8m) data.
 - [2024/08] Release the inference and training code of Eagle.
-- [2024/08] Release the SFT data of Eagle [Eagle-SFT-1.8M](https://huggingface.co/datasets/shi-labs/Eagle-1.8m).
-- [2024/08] The online demo of Eagle-X5-13B-Chat is available at [Demo](https://huggingface.co/spaces/NVEagle/Eagle-X5-13B-Chat).
-- [2024/06] 🏆 Winning the 2nd Place in CVPR24 Challenge on Driving with Language [Website](https://opendrivelab.com/challenge2024/#driving_with_language)
+- [2024/06] 🏆 Winning the 2nd Place in CVPR24 Challenge on Driving with Language [Website](https://opendrivelab.com/challenge2024/#driving_with_language).
 - [2024/05] Serving as the 2D VLM pre-training for [OmniDrive](https://github.com/NVlabs/OmniDrive).
 
 
@@ -37,35 +40,36 @@ Eagle is a family of Vision-Centric High-Resolution Multimodal LLMs. It presents
 - [Training Data](#training-data)
 - [Checkpoint Preparation](#checkpoint-preparation)
 - [Training](#training)
+- [Inference](#inference)
 - [Evaluation](#evaluation)
 - [Gradio Demo](#gradio-demo)
 
 
 ## Models & Performance
-Here is the model trained on our organized 1.8M supervised fine-tuning data.
+Models trained on the [LLaVA-1.5 Pre-train](https://huggingface.co/datasets/liuhaotian/LLaVA-Pretrain) and [Eagle-SFT-1.8M](https://huggingface.co/datasets/shi-labs/Eagle-1.8m) data are available to download here.
 | Model&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | LLM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Pretrain&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | SFT | GQA | MME | MMMU(Val) | OCR | SQA(I) | POPE | TextVQA | InfoVQA | VizWiz | SEED(I) | VQAv2 | MathVista | MMBench | ChartQA | DocVQA |
-|----------|------------|-----------|-------------|:------:|:-------:|:----------:|:----------:|:---------------:|:------:|:-------------:|:--------------:|:-------------:|:------------:|:------------:|:--------------------:|:---------------:|:---------:|:------------:|
-| [Eagle-X4-7B](https://huggingface.co/NVEagle/Eagle-X4-7B) | Vicuna-7B  |  LLaVA-v1.5    | 1.8M    | 64.8 |  1561 |     34.9 |      540 |          70.5 | 88.4 |        70.9 |         47.4 |        50.8 |       73.4 | 83.4 | 37.3 | 67.8 | 67.5 | 78.8 |
-| [Eagle-X5-7B](https://huggingface.co/NVEagle/Eagle-X5-7B) | Vicuna-7B  |  LLaVA-v1.5    | 1.8M | 64.9 |  1528 |     36.3 |      529 |          69.8 | 88.8 |        71.2 |         47.4 |        54.4 |       73.9 | 83.4 | 37.0 | 68.4 | 67.8 | 78.6 |
-| [Eagle-X4-13B](https://huggingface.co/NVEagle/Eagle-X4-13B) | Vicuna-13B |  LLaVA-v1.5    | 1.8M  | 66.3 |  1627 |     36.9 |      561 |          73.1 | 87.7 |        73.9 |         50.7 |        56.2 |       74.4 | 83.8       |               37.6 |          69.9 |    70.5 |       79.9 |
-| [Eagle-X5-13B](https://huggingface.co/NVEagle/Eagle-X5-13B) | Vicuna-13B |  LLaVA-v1.5    | 1.8M | 66.2 |  1609 |     36.6 |      574 |          72.8 | 87.8 |        74.2 |         51.8 |        59.3 |       74.1 |       83.8 |               38.8 |          69.2 |    69.9 |       79.4 |
+|------|------|------|------|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|
+| [Eagle-X4-7B](https://huggingface.co/NVEagle/Eagle-X4-7B) | Vicuna-7B | LLaVA-v1.5 | 1.8M | 64.8 | 1561 | 34.9 | 540 | 70.5 | 88.4 | 70.9 | 47.4 | 50.8 | 73.4 | 83.4 | 37.3 | 67.8 | 67.5 | 78.8 |
+| [Eagle-X5-7B](https://huggingface.co/NVEagle/Eagle-X5-7B) | Vicuna-7B | LLaVA-v1.5 | 1.8M | 64.9 | 1528 | 36.3 | 529 | 69.8 | 88.8 | 71.2 | 47.4 | 54.4 | 73.9 | 83.4 | 37.0 | 68.4 | 67.8 | 78.6 |
+| [Eagle-X4-13B](https://huggingface.co/NVEagle/Eagle-X4-13B) | Vicuna-13B | LLaVA-v1.5 | 1.8M | 66.3 | 1627 | 36.9 | 561 | 73.1 | 87.7 | 73.9 | 50.7 | 56.2 | 74.4 | 83.8 | 37.6 | 69.9 | 70.5 | 79.9 |
+| [Eagle-X5-13B](https://huggingface.co/NVEagle/Eagle-X5-13B) | Vicuna-13B |  LLaVA-v1.5 | 1.8M | 66.2 | 1609 | 36.6 | 574 | 72.8 | 87.8 | 74.2 | 51.8 | 59.3 | 74.1 | 83.8 | 38.8 | 69.2 | 69.9 | 79.4 |
 
-
-|            |             | Knowledge |      |      |           |      | General |        |      |      |      |  Document |         |      |         |        | Vision |      |             |
-|------------|----------------|:---------:|:----:|:----:|:---------:|:----:|:-------:|:------:|:----:|:----:|:----:|:----:|:-------:|:----:|:-------:|:------:|:--------------:|:----:|:-----------:|
-|     LLM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    |     Model&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;     | Avg | SQA(I) | MMMU(Val) | MathVista | AI2D | Avg    | MME    | MMB  | SEED | GQA  | Avg | ChartQA | OCR | TextVQA | DocVQA | Avg    | MMVP | RWQA |
-| Llama 3-8B | Mini-Gemini-HD | 55.7      | 75.1 | 37.3 | 37        | 73.5 | 72.7    | 1606   | 72.7 | 73.2 | 64.5 | 62.9 | 59.1    | 47.7 | 70.2    | 74.6   | 40.4           | 18.7 | 62.1        |
-|            | LLaVA-NeXT     | 55.6      | 72.8 | 41.7 | 36.3      | 71.6 | 72.5    | 1604   | 72.1 | 72.7 | 65.2 | 63.9 | 69.5    | 49.0 | 64.6    | 72.6   | 49.4           | 38.7 | 60.1        |
-|            |    Cambrian-1    | 61.3      | 80.4 | 42.7 | 49.0      | 73.0 | 73.1    | 1547   | 75.9 | 74.7 | 64.6 | 71.3 | 73.3    | 62.4 | 71.7    | 77.8   | 57.6           | 51.3 | 64.2        |
-|            | [Ealge-X4-8B-Plus](https://huggingface.co/NVEagle/Eagle-X4-8B-Plus) | 64.2      | 84.3 | 43.4 | 52.7      | 76.1 | 73.8    | 1559   | 75.9 | 76.3 | 64.9 | 76.6 | 80.1    | 62.6 | 77.1    | 86.6   | 69.1           | 71.6 | 66.5        |
-| Vicuna-13B | Mini-Gemini-HD |  54.1      | 71.9 | 37.3 | 37.0      | 70.1 | 70.7    | 1597   | 68.6 | 70.6 | 63.7 | 60.8 | 56.6    | 46.6 | 70.2    | 69.8   | 38.4           | 19.3 | 57.5        |
-|            | LLaVA-NeXT     | 53.7      | 73.5 | 36.2 | 35.1      | 70.0 | 69.9    | 1575   | 70.0 | 65.6 | 65.4 | 62.9 | 62.2    | 51.4 | 67.1    | 70.9   | 47.6           | 36.0 | 59.1        |
-|            |    Cambrian-1    | 60.2      | 79.3 | 40.0 | 48.0      | 73.6 | 73.7    | 1610   | 75.7 | 74.4 | 64.3 | 71.3 | 73.8    | 61.9 | 72.8    | 76.8   | 52.2           | 41.3 | 63.0        |
-|            | [Ealge-X4-13B-Plus](https://huggingface.co/NVEagle/Eagle-X4-13B-Plus) | 63.0      | 82.0 | 41.0 | 54.4      | 74.0 | 74.6    | 1651   | 75.7 | 74.8 | 65.3 | 75.1 | 77.6 | 61.9 | 75.5 | 85.4 | 61.4 | 58.0 | 64.8        |
-|   Yi-34B   | Mini-Gemini-HD | 62.4      | 77.7 | 48.0 | 43.4      | 80.5 | 76.2    | 1659   | 80.6 | 75.3 | 65.8 | 68.1 | 67.6    | 51.8 | 74.1    | 78.9   | 52.3           | 37.3 | 67.2        |
-|            | LLaVA-NeXT | 62.5      | 81.8 | 46.7 | 46.5      | 74.9 | 76.0    | 1633   | 79.3 | 75.9 | 67.1 | 67.7 | 68.7    | 54.5 | 69.5    | 78.1   | 54.2           | 47.3 | 61.0        |
-|            |    Cambrian-1    | 67.0      | 85.6 | 49.7 | 53.2      | 79.7 | 76.8    | 1689   | 81.4 | 75.3 | 65.8 | 71.9 | 75.6    | 60.0 | 76.7    | 75.5   | 60.3           | 52.7 | 67.8        |
-|            | [Ealge-X5-34B-Plus](https://huggingface.co/NVEagle/Eagle-X5-34B-Plus) | 68.6      | 85.5 | 51.8 | 57.9      | 79.1 | 76.3    | 1677   | 81.0 | 75.6 | 64.9 | 75.4 | 77.2    | 62.4 | 78.8    | 83.0   | 68.3           | 67.0 | 69.5        |
+Models trained on the [Cambrian-1](https://huggingface.co/collections/nyu-visionx/cambrian-data-6667ce801e179b4fbe774e11) data are available to download here.
+|      |      | Knowledge |      |      |      |      | General |      |      |      |      | Document |      |      |      |      | Vision |      |      |
+|------|------|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|
+| LLM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Model&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Avg | SQA(I) | MMMU(Val) | MathVista | AI2D | Avg | MME | MMB | SEED(I) | GQA | Avg | ChartQA | OCR | TextVQA | DocVQA | Avg | MMVP | RWQA |
+| Llama 3-8B | Mini-Gemini-HD | 55.7 | 75.1 | 37.3 | 37.0 | 73.5 | 72.7 | 1606 | 72.7 | 73.2 | 64.5 | 62.9 | 59.1 | 47.7 | 70.2 | 74.6 | 40.4 | 18.7 | 62.1 |
+|            | LLaVA-NeXT     | 55.6 | 72.8 | 41.7 | 36.3 | 71.6 | 72.5 | 1604 | 72.1 | 72.7 | 65.2 | 63.9 | 69.5 | 49.0 | 64.6 | 72.6 | 49.4 | 38.7 | 60.1 |
+|            | Cambrian-1     | 61.3 | 80.4 | 42.7 | 49.0 | 73.0 | 73.1 | 1547 | 75.9 | 74.7 | 64.6 | 71.3 | 73.3 | 62.4 | 71.7 | 77.8 | 57.6 | 51.3 | 64.2 |
+|            | [Ealge-X4-8B-Plus](https://huggingface.co/NVEagle/Eagle-X4-8B-Plus) | 64.2 | 84.3 | 43.4 | 52.7 | 76.1 | 73.8 | 1559 | 75.9 | 76.3 | 64.9 | 76.6 | 80.1 | 62.6 | 77.1 | 86.6 | 69.1 | 71.6 | 66.5 |
+| Vicuna-13B | Mini-Gemini-HD | 54.1 | 71.9 | 37.3 | 37.0 | 70.1 | 70.7 | 1597 | 68.6 | 70.6 | 63.7 | 60.8 | 56.6 | 46.6 | 70.2 | 69.8 | 38.4 | 19.3 | 57.5 |
+|            | LLaVA-NeXT     | 53.7 | 73.5 | 36.2 | 35.1 | 70.0 | 69.9 | 1575 | 70.0 | 65.6 | 65.4 | 62.9 | 62.2 | 51.4 | 67.1 | 70.9 | 47.6 | 36.0 | 59.1 |
+|            | Cambrian-1     | 60.2 | 79.3 | 40.0 | 48.0 | 73.6 | 73.7 | 1610 | 75.7 | 74.4 | 64.3 | 71.3 | 73.8 | 61.9 | 72.8 | 76.8 | 52.2 | 41.3 | 63.0 |
+|            | [Ealge-X4-13B-Plus](https://huggingface.co/NVEagle/Eagle-X4-13B-Plus) | 63.0 | 82.0 | 41.0 | 54.4 | 74.0 | 74.6 | 1651 | 75.7 | 74.8 | 65.3 | 75.1 | 77.6 | 61.9 | 75.5 | 85.4 | 61.4 | 58.0 | 64.8 |
+|   Yi-34B   | Mini-Gemini-HD | 62.4 | 77.7 | 48.0 | 43.4 | 80.5 | 76.2 | 1659 | 80.6 | 75.3 | 65.8 | 68.1 | 67.6 | 51.8 | 74.1 | 78.9 | 52.3 | 37.3 | 67.2 |
+|            | LLaVA-NeXT     | 62.5 | 81.8 | 46.7 | 46.5 | 74.9 | 76.0 | 1633 | 79.3 | 75.9 | 67.1 | 67.7 | 68.7 | 54.5 | 69.5 | 78.1 | 54.2 | 47.3 | 61.0 |
+|            | Cambrian-1     | 67.0 | 85.6 | 49.7 | 53.2 | 79.7 | 76.8 | 1689 | 81.4 | 75.3 | 65.8 | 71.9 | 75.6 | 60.0 | 76.7 | 75.5 | 60.3 | 52.7 | 67.8 |
+|            | [Ealge-X5-34B-Plus](https://huggingface.co/NVEagle/Eagle-X5-34B-Plus) | 68.6 | 85.5 | 51.8 | 57.9 | 79.1 | 76.3 | 1677 | 81.0 | 75.6 | 64.9 | 75.4 | 77.2 | 62.4 | 78.8 | 83.0 | 68.3 | 67.0 | 69.5 |
 
 
 ## Visual Examples
@@ -133,6 +137,8 @@ pip install .
 pip install flash-attn --no-build-isolation
 ```
 If you have any questions about the environment setup, please follow the instruction [video](https://www.youtube.com/watch?si=20yjQlthlKPTC87s&v=0-md0S9GDJA&feature=youtu.be).
+
+
 ## Training Data
 
 ### Pretraining
@@ -158,7 +164,7 @@ Please note that while the images have been packaged for convenience, the origin
 |                 | DVQA            | 25k           | Chart understanding                  |
 |                 | AI2D            | 15k           | Open-Hermes 2.5                      |
 |                 | ShareGPT-4V     | 100k          | Detailed caption generated by GPT-4V |
-|                 | laion-GPT4V     | 11k           | Detailed caption generated by GPT-4V |
+|                 | laion-gpt4v *   | 11k           | Detailed caption generated by GPT-4V |
 |                 | LVIS-Instruct4V | 220k          | Multi-modal conversation             |
 |                 | LRV-Instruct    | 150k          | Multi-modal conversation             |
 |                 | Geo170k         | 120k          | Math                                 |
@@ -167,10 +173,14 @@ Please note that while the images have been packaged for convenience, the origin
 |                 | Open-Hermes 2.5 | 300k          | Text                                 |
 | Initial Version | Total           | 1.8M          |                                      |
 
+\* We have done manual inspection to ensure that the dataset does not contain any CSAM content.
+
+
 ## Checkpoint Preparation
 Please provide the pretrained model weights for EVA-02 vision tower pretrained on detection task. You can download the checkpoint [here](https://huggingface.co/Yuxin-CV/EVA-02/blob/main/eva02/det/eva02_L_coco_det_sys_o365.pth) and place it in the `checkpoints/pretrained_models/` directory.
 
 The weights of other models, including Vicuna, Segment Anything Model, Pix2Struct, ConvNeXt, and CLIP will be automatically downloaded from huggingface during the first run.
+
 
 ## Training
 
@@ -178,7 +188,7 @@ The training process for Eagle follows a standard two-stage approach: pretrainin
 
 In default we use 32 NVIDIA A100 80G GPU to conduct the training. Please modify the `per_device_train_batch_size` and `gradient_accumulation_steps` if you are using different amount of GPUs.
 
-### Pretraining
+### Pre-training
 If you are using a slurm cluster, please use the following command to submit a job.
 
 ```
@@ -202,7 +212,7 @@ You can specify the `RUN_NAME` and `CMD` variables to run different models accor
 Remember to set the `$PATH_TO_PRETRAINING_DATA` in each script to the downloaded pretraining data. After you have complete the pretraining, you will get a file named `mm_projector.bin` in the checkpoint folder. 
 
 
-### Supervised Fine-Tuning
+### Supervised Fine-tuning
 After pretraining is complete, a projector weight file `` will be saved in the checkpoint directory. Please set the `$PATH_TO_PRETRAINED_PROJECTOR` to the path of this projector weights.
 
 You can use the same sumbit code as the pretraining, and use the script in the following table to launch the supervised fine-tuning.
@@ -221,27 +231,8 @@ If you have limited GPU resources or memory, please considering the following:
 - use `scripts/zero3.json` or `scripts/zero3_offload.json` as the Deepspeed training config instead of the default `zero2.json`
 - use gradient accumulation and reduce the per-device batch size
 
-## Evaluation
 
-### Evaluation with LMMs-Eval
-We evaluate MME, MMBench, SEED, MathVista, POPE, ScienceQA, GQA, OCRBench, TextVQA, and ChartQA using [LMMs-Eval](https://github.com/EvolvingLMMs-Lab/lmms-eval). For better reproducibility, we have included the specific version we used in this repository. Please follow their guidelines and use the following commands to perform the evaluation:
-
-```bash
-bash scripts/eval_lmms_eval/eval-mme-seed-mmmu-pope-sqa-gqa-ocrbench-textvqa-chartqa.sh $REPO_ID_OR_LOCAL_PATH $MODEL_NAME $CONV_MODE
-# MODEL_NAME can be any name, just to dinstinguish different runs.
-# CONV_MODE should be the name of the conversation template during triaining, i.e., "vicuna_v1" for Vicuna, "llama3" for Llama3, and "yi_34b_chatml_direct" for Yi-34B.
-```
-
-
-## Gradio Demo
-We set up an online demo [here](https://huggingface.co/spaces/NVEagle/Eagle-X5-13B-Chat). You can also run this demo on your own machine by running:
-```
-python gradio_demo.py \
-    --model-path ${MODEL_CKPT}
-    --conv-mode vicuna_v1
-```
-
-## Inference 
+## Inference
 Our inference code is [here](https://github.com/NVlabs/EAGLE/tree/main/predict_demo.py). You can set you own 'image_path' [here](https://github.com/NVlabs/EAGLE/tree/main/predict_demo.py/#L38) and 'question' [here](https://github.com/NVlabs/EAGLE/tree/main/predict_demo.py/#L39).
 ```
 import os
@@ -297,6 +288,27 @@ with torch.inference_mode():
 
 outputs = tokenizer.batch_decode(output_ids, skip_special_tokens=True)[0].strip()
 print(f"Image:{image_path} \nPrompt:{input_prompt} \nOutput:{outputs}")
+```
+
+
+## Evaluation
+
+### Evaluation with LMMs-Eval
+We evaluate MME, MMBench, SEED, MathVista, POPE, ScienceQA, GQA, OCRBench, TextVQA, and ChartQA using [LMMs-Eval](https://github.com/EvolvingLMMs-Lab/lmms-eval). For better reproducibility, we have included the specific version we used in this repository. Please follow their guidelines and use the following commands to perform the evaluation:
+
+```bash
+bash scripts/eval_lmms_eval/eval-mme-seed-mmmu-pope-sqa-gqa-ocrbench-textvqa-chartqa.sh $REPO_ID_OR_LOCAL_PATH $MODEL_NAME $CONV_MODE
+# MODEL_NAME can be any name, just to dinstinguish different runs.
+# CONV_MODE should be the name of the conversation template during triaining, i.e., "vicuna_v1" for Vicuna, "llama3" for Llama3, and "yi_34b_chatml_direct" for Yi-34B.
+```
+
+
+## Gradio Demo
+We set up an online demo [here](https://huggingface.co/spaces/NVEagle/Eagle-X5-13B-Chat). You can also run this demo on your own machine by running:
+```
+python gradio_demo.py \
+    --model-path ${MODEL_CKPT}
+    --conv-mode vicuna_v1
 ```
 
 
