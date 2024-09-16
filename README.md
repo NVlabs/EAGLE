@@ -141,10 +141,10 @@ If you have any questions about the environment setup, please follow the instruc
 
 ## Training Data
 
-### Pretraining
+### Pre-training
 We use the same pretraining data as LLaVA v1.5, please download the data from [here](https://huggingface.co/datasets/liuhaotian/LLaVA-CC3M-Pretrain-595K).
 
-### Supervised Finetuning
+### Supervised Fine-tuning
 We have compiled all the data and images used in our supervised fine-tuning together. Please download the data from [here](https://huggingface.co/datasets/shi-labs/Eagle-1.8M).
 After cloning this dataset, please run the following commands to extract all the images:
 ```
