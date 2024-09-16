@@ -21,14 +21,14 @@ Eagle is a family of Vision-Centric High-Resolution Multimodal LLMs. It presents
 </div>
 
 
-## Release
+## Updates
 - [TODO] Vision encoder model weights with pre-alignment.
-- [2024/09] Release models trained on the [Cambrian-1](https://huggingface.co/collections/nyu-visionx/cambrian-data-6667ce801e179b4fbe774e11) data.
+- [2024/09] 🔥 Release models trained on the [Cambrian-1](https://huggingface.co/collections/nyu-visionx/cambrian-data-6667ce801e179b4fbe774e11) data.
 - [2024/09] Provide an [example](#evaluation) for evaluation.
 - [2024/08] Release the Eagle-X5-13B-Chat online [demo](https://huggingface.co/spaces/NVEagle/Eagle-X5-13B-Chat).
 - [2024/08] Release the [Eagle-SFT-1.8M](https://huggingface.co/datasets/shi-labs/Eagle-1.8m) data.
-- [2024/08] Release models trained on the [LLaVA-1.5 Pre-train](https://huggingface.co/datasets/liuhaotian/LLaVA-Pretrain) and [Eagle-SFT-1.8M](https://huggingface.co/datasets/shi-labs/Eagle-1.8m) data.
-- [2024/08] Release the inference and training code of Eagle.
+- [2024/08] 🔥 Release models trained on the [LLaVA-1.5 Pre-train](https://huggingface.co/datasets/liuhaotian/LLaVA-Pretrain) and [Eagle-SFT-1.8M](https://huggingface.co/datasets/shi-labs/Eagle-1.8m) data.
+- [2024/08] Release training and inference code of Eagle.
 - [2024/06] 🏆 Winning the 2nd Place in CVPR24 Challenge on Driving with Language [Website](https://opendrivelab.com/challenge2024/#driving_with_language).
 - [2024/05] Serving as the 2D VLM pre-training for [OmniDrive](https://github.com/NVlabs/OmniDrive).
 
