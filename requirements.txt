@@ -1,10 +1,10 @@
-torch==2.1.2
-torchvision==0.16.2
-transformers==4.37.2 
-tokenizers==0.15.1 
-sentencepiece==0.1.99
+torch==2.3.1
+torchvision
+transformers==4.44.2 
+tokenizers==0.19.1 
+sentencepiece==0.2.0
 shortuuid
-accelerate==0.21.0
+accelerate==0.34.2
 peft
 bitsandbytes
 pydantic 
