@@ -120,7 +120,7 @@ Please following the guide here to prepare the environment on **Linux OS**.
 1. Clone this repository
 ```bash
 git clone https://github.com/NVlabs/EAGLE.git
-cd Eagle
+cd EAGLE
 ```
 
 2. Create environment and install package
