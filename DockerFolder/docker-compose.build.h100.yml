@@ -1,0 +1,6 @@
+services:
+  eagle:
+    build:
+      context: ..
+      dockerfile: DockerFolder/Dockerfile.eagle-h100
+    image: hcagrib/magi-eagle:h100

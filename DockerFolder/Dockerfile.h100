@@ -1,0 +1,197 @@
+# ============================================================
+# MagiAttention — H100 / Hopper / sm90
+#
+# Bu image H100 OLMAYAN bir makinede build edilebilir.
+# CUDA extension'lari H100 (sm90) hedefiyle derlenir.
+#
+# Build:
+#   docker build --no-cache --progress=plain \
+#     -f Dockerfile.h100 \
+#     -t magiattention:h100 .
+#
+# Run on H100:
+#   docker run --gpus all \
+#     --ipc host \
+#     --network host \
+#     --ulimit memlock=-1 \
+#     --ulimit stack=67108864 \
+#     -it magiattention:h100
+# ============================================================
+
+ARG NGC_TAG=25.10
+FROM nvcr.io/nvidia/pytorch:${NGC_TAG}-py3
+
+ARG MAGI_REF=main
+ARG BUILD_JOBS=2
+
+
+# ------------------------------------------------------------
+# H100 / Hopper build configuration
+# ------------------------------------------------------------
+
+ENV MAGI_ATTENTION_BUILD_COMPUTE_CAPABILITY=90 \
+    TORCH_CUDA_ARCH_LIST="9.0" \
+    MAX_JOBS=${BUILD_JOBS} \
+    MAGI_ATTENTION_PREBUILD_FFA_JOBS=${BUILD_JOBS} \
+    PIP_NO_CACHE_DIR=1
+
+
+# ------------------------------------------------------------
+# Base packages
+# ------------------------------------------------------------
+
+WORKDIR /workspace
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        git \
+        curl \
+        ca-certificates \
+        build-essential \
+        ninja-build && \
+    rm -rf /var/lib/apt/lists/*
+
+
+# ------------------------------------------------------------
+# Git network settings
+#
+# HTTP/2 stream kopmalarini azaltmak icin HTTP/1.1.
+# ------------------------------------------------------------
+
+RUN git config --global http.version HTTP/1.1 && \
+    git config --global http.postBuffer 524288000 && \
+    git config --global http.lowSpeedLimit 0 && \
+    git config --global http.lowSpeedTime 999999
+
+
+# ------------------------------------------------------------
+# Clone MagiAttention
+#
+# Retry + shallow + blob filtering.
+# ------------------------------------------------------------
+
+RUN set -eux; \
+    success=0; \
+    for i in 1 2 3 4 5; do \
+        echo "MagiAttention clone attempt ${i}/5"; \
+        rm -rf /workspace/MagiAttention; \
+        if git clone \
+            --depth 1 \
+            --single-branch \
+            --branch "${MAGI_REF}" \
+            --filter=blob:none \
+            https://github.com/SandAI-org/MagiAttention.git \
+            /workspace/MagiAttention; then \
+            success=1; \
+            break; \
+        fi; \
+        echo "Clone failed. Retrying..."; \
+        sleep 5; \
+    done; \
+    test "${success}" = "1"
+
+
+WORKDIR /workspace/MagiAttention
+
+
+# ------------------------------------------------------------
+# Submodules
+#
+# Ayrica indiriyoruz ki clone ve submodule hatalari ayrilsin.
+# ------------------------------------------------------------
+
+RUN set -eux; \
+    git submodule sync --recursive; \
+    success=0; \
+    for i in 1 2 3 4 5; do \
+        echo "Submodule download attempt ${i}/5"; \
+        if git submodule update \
+            --init \
+            --recursive \
+            --depth 1 \
+            --jobs 4; then \
+            success=1; \
+            break; \
+        fi; \
+        echo "Submodule download failed. Retrying..."; \
+        sleep 5; \
+    done; \
+    test "${success}" = "1"
+
+
+# ------------------------------------------------------------
+# Python dependencies
+# ------------------------------------------------------------
+
+RUN python -m pip install \
+    --no-cache-dir \
+    -r requirements.txt
+
+
+# ------------------------------------------------------------
+# Build MagiAttention specifically for H100 / sm90
+#
+# Build makinesinin GPU'suna bakmadan sm90 hedefliyoruz.
+# ------------------------------------------------------------
+
+RUN MAGI_ATTENTION_BUILD_COMPUTE_CAPABILITY=90 \
+    TORCH_CUDA_ARCH_LIST="9.0" \
+    MAX_JOBS=${BUILD_JOBS} \
+    MAGI_ATTENTION_PREBUILD_FFA_JOBS=${BUILD_JOBS} \
+    python -m pip install \
+        --no-build-isolation \
+        --no-cache-dir \
+        .
+
+
+# ------------------------------------------------------------
+# Optional extensions
+# ------------------------------------------------------------
+
+RUN set -eux; \
+    if [ -d /workspace/MagiAttention/extensions ]; then \
+        cd /workspace/MagiAttention/extensions; \
+        if [ -f setup.py ] || [ -f pyproject.toml ]; then \
+            MAGI_ATTENTION_BUILD_COMPUTE_CAPABILITY=90 \
+            TORCH_CUDA_ARCH_LIST="9.0" \
+            MAX_JOBS=${BUILD_JOBS} \
+            python -m pip install \
+                --no-deps \
+                --no-build-isolation \
+                --no-cache-dir \
+                .; \
+        else \
+            echo "extensions directory exists, but no installable Python package found."; \
+        fi; \
+    fi
+
+
+# ------------------------------------------------------------
+# Installation verification
+#
+# GPU gerektirmeyen kontroller.
+# ------------------------------------------------------------
+
+RUN python - <<'PY'
+import torch
+import magi_attention
+
+print("=" * 70)
+print("MagiAttention installation OK")
+print("torch version       :", torch.__version__)
+print("torch CUDA version  :", torch.version.cuda)
+print(
+    "magi_attention ver :",
+    getattr(magi_attention, "__version__", "unknown")
+)
+print("=" * 70)
+PY
+
+
+# ------------------------------------------------------------
+# Runtime
+# ------------------------------------------------------------
+
+WORKDIR /workspace
+
+CMD ["/bin/bash"]
