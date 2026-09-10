@@ -55,6 +55,8 @@ from eaglevl.train.constants import (
 )
 from eaglevl.train.arguments import ModelArguments, DataTrainingArguments
 from eaglevl.train.trainer_monkey_patch import replace_create_optimizer_with_various_lr
+from eaglevl.train.box_loss import canonical_box_metadata
+import math
 from PIL import Image, ImageFile, PngImagePlugin
 from torch.utils.data import Dataset, IterableDataset, DataLoader
 from transformers import (AutoConfig, AutoModelForCausalLM, AutoTokenizer,
@@ -295,6 +297,12 @@ class LazySupervisedDatasetMTP(Dataset):
         targets = input_ids.clone()
         assert targets_flag.sum() > 0, f"No valid labels for training, skip sample in {self.ds_name}"
         targets[targets_flag == 0] = IGNORE_TOKEN_ID
+        # Capture canonical targets before synthetic MTP replicas are appended.
+        bbox_metadata = canonical_box_metadata(
+            targets, tokenizer.convert_tokens_to_ids(number_tokens_list),
+            tokenizer.convert_tokens_to_ids(BOX_START_TOKEN),
+            tokenizer.convert_tokens_to_ids(BOX_END_TOKEN),
+        )
         
         input_ids_np = input_ids.squeeze(0).cpu().numpy()
         targets_np = targets.squeeze(0).cpu().numpy()
@@ -391,6 +399,7 @@ class LazySupervisedDatasetMTP(Dataset):
                 labels=targets,
                 attention_mask=input_ids.ne(tokenizer.pad_token_id),
                 position_ids=position_ids,
+                **bbox_metadata,
             )
 
         # ========= 分支 2：检测序列标记存在，使用原有的 box/ref-aware 逻辑 =========
@@ -476,6 +485,7 @@ class LazySupervisedDatasetMTP(Dataset):
             labels=targets,
             attention_mask=input_ids.ne(tokenizer.pad_token_id),
             position_ids=position_ids,
+            **bbox_metadata,
         )
 
     def _validate_image_token_alignment(self, input_ids: torch.Tensor, pixel_values, image_grid_hws) -> None:
@@ -545,6 +555,8 @@ class LazySupervisedDatasetMTP(Dataset):
             labels=labels_dict["labels"],
             position_ids=labels_dict["position_ids"],
             attention_mask=labels_dict["attention_mask"],
+            bbox_coord_positions=labels_dict["bbox_coord_positions"],
+            gt_boxes=labels_dict["gt_boxes"],
             image_flags=image_flags,
             pixel_values=pixel_values,
             image_grid_hws=image_grid_hws,
@@ -784,6 +796,8 @@ class StreamPackedDatasetMTP(IterableDataset):
         for k in batch:
             if k == '_sample_lengths':
                 result[k] = batch[k] + [sample_len]
+            elif k == 'bbox_coord_positions':
+                result[k] = torch.cat([batch[k], sample[k] + batch['input_ids'].size(0)])
             elif k == 'image_grid_hws':
                 if isinstance(batch[k], np.ndarray) and isinstance(sample[k], np.ndarray):
                     result[k] = np.concatenate([batch[k], sample[k]], axis=0)
@@ -1022,6 +1036,17 @@ def packed_collate_fn_mtp(features: List[dict], dataset: Optional[StreamPackedDa
 
     pos = feat['position_ids'].unsqueeze(0)  # [L] -> [1, L]
 
+    box_positions = feat['bbox_coord_positions']
+    if box_positions.numel():
+        if torch.any(box_positions < 1) or torch.any(box_positions >= input_len):
+            raise ValueError("Packed bbox label positions out of bounds")
+        boundaries = torch.as_tensor(sub_sample_lengths).cumsum(0)
+        # Include the opening/closing marker and prediction positions in the check.
+        first_sample = torch.bucketize(box_positions[:, 0] - 1, boundaries, right=True)
+        last_sample = torch.bucketize(box_positions[:, -1] + 1, boundaries, right=True)
+        if torch.any(first_sample != last_sample):
+            raise ValueError("A bbox crosses a packed sample boundary")
+
     result = dict(
         input_ids=feat['input_ids'].unsqueeze(0),
         labels=feat['labels'].unsqueeze(0),
@@ -1030,6 +1055,8 @@ def packed_collate_fn_mtp(features: List[dict], dataset: Optional[StreamPackedDa
         pixel_values=feat['pixel_values'],
         image_flags=image_flags,
         sub_sample_lengths=[sub_sample_lengths],
+        bbox_coord_positions=box_positions,
+        gt_boxes=feat['gt_boxes'],
     )
 
     if 'image_grid_hws' in feat:
@@ -1137,6 +1164,30 @@ class StreamPackingMTPTrainer(Trainer):
         self._sample_log_interval = sample_log_interval
         self._start_step = None  # 记录开始的step，用于resume时正确计算平均值
     
+    def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):
+        result = super().compute_loss(model, inputs, return_outputs=return_outputs,
+                                      num_items_in_batch=num_items_in_batch)
+        unwrapped = self.accelerator.unwrap_model(model)
+        metrics = getattr(unwrapped, '_last_box_loss_metrics', None)
+        if model.training and metrics is not None:
+            # Detached only AFTER total_loss is constructed; no graph retained.
+            values = torch.stack((*metrics, metrics[0].new_ones(())))
+            previous = getattr(self, '_box_metric_sums', None)
+            self._box_metric_sums = values if previous is None else previous + values
+        return result
+
+    def log(self, logs, *args, **kwargs):
+        sums = getattr(self, '_box_metric_sums', None)
+        if sums is not None and 'loss' in logs:
+            sums = sums.clone()
+            if dist.is_available() and dist.is_initialized():
+                dist.all_reduce(sums, op=dist.ReduceOp.SUM)
+            means = (sums[:4] / sums[4].clamp_min(1)).tolist()
+            logs = dict(logs, **dict(zip(
+                ('ce_loss', 'giou_loss', 'total_loss', 'num_valid_boxes'), means)))
+            self._box_metric_sums = None
+        return super().log(logs, *args, **kwargs)
+
     def training_step(self, model, inputs, num_items_in_batch=None):
         # 记录开始的step（用于resume时正确计算平均值）
         if self._start_step is None:
@@ -1323,6 +1374,14 @@ def main():
     ref_end_token_id = tokenizer.convert_tokens_to_ids(REF_END_TOKEN)
     coord_start_token_id = tokenizer.convert_tokens_to_ids(number_tokens_list[0])
     coord_end_token_id = tokenizer.convert_tokens_to_ids(number_tokens_list[-1])
+    coord_token_ids = tokenizer.convert_tokens_to_ids(number_tokens_list)
+    if len(set(coord_token_ids)) != len(number_tokens_list) or any(
+        tokenizer.encode(token, add_special_tokens=False) != [token_id]
+        for token, token_id in zip(number_tokens_list, coord_token_ids)
+    ):
+        raise ValueError("Coordinate vocabulary must contain unique single tokens in numeric order")
+    if not math.isfinite(model_args.lambda_box) or model_args.lambda_box < 0:
+        raise ValueError("lambda_box must be finite and nonnegative")
     none_token_ids = tokenizer.encode("none", add_special_tokens=False)
     none_token_id = none_token_ids[0] if len(none_token_ids) == 1 else 4064
     
@@ -1407,6 +1466,8 @@ def main():
         processor_config["chat_template"] = chat_template_data["chat_template"]
         processor = LocateAnythingProcessor(tokenizer=tokenizer, image_processor=image_processor, **processor_config)
         
+    model.config.lambda_box = model_args.lambda_box
+    model.config.coord_token_ids = coord_token_ids
     model.neftune_alpha = data_args.neftune_alpha
     
     # Enable packing mode for stream packing (works for both pretrained and scratch models)

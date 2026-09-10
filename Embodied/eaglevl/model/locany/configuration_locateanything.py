@@ -54,6 +54,8 @@ class LocateAnythingConfig(PretrainedConfig):
             template=None,
             mlp_checkpoint=False,
             image_token_index=151667,
+            lambda_box=0.1,
+            coord_token_ids=None,
             **kwargs):
         super().__init__(**kwargs)
 
@@ -87,6 +89,8 @@ class LocateAnythingConfig(PretrainedConfig):
         self.template = template
         self.tie_word_embeddings = self.text_config.tie_word_embeddings
         self.image_token_index = image_token_index
+        self.lambda_box = lambda_box
+        self.coord_token_ids = coord_token_ids
 
     def to_dict(self):
         """

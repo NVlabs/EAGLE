@@ -28,6 +28,7 @@ from .configuration_locateanything import LocateAnythingConfig
 from transformers.utils import add_start_docstrings, add_start_docstrings_to_model_forward, logging, replace_return_docstrings
 from eaglevl.sp_utils import  (get_pg_manager, ring_split_for_sequence_parallel)
 from eaglevl.train.liger_loss_weight_ops import LigerFusedLinearCrossEntropyLoss
+from eaglevl.train.box_loss import coordinate_giou_loss
 
 
 logger = logging.get_logger(__name__)
@@ -183,6 +184,8 @@ class LocateAnythingForConditionalGeneration(LocateAnythingPreTrainedModel, Gene
             past_key_values: Optional[List[torch.FloatTensor]] = None,
             labels: Optional[torch.LongTensor] = None,
             loss_weight: Optional[torch.FloatTensor] = None,
+            bbox_coord_positions: Optional[torch.LongTensor] = None,
+            gt_boxes: Optional[torch.FloatTensor] = None,
             use_cache: Optional[bool] = None,
             output_attentions: Optional[bool] = None,
             output_hidden_states: Optional[bool] = None,
@@ -301,6 +304,22 @@ class LocateAnythingForConditionalGeneration(LocateAnythingPreTrainedModel, Gene
 
         liger_loss_fn = LigerFusedLinearCrossEntropyLoss(ignore_index=IGNORE_INDEX, reduction='mean')
         loss = liger_loss_fn(lm_head_weight, shift_hidden_states, shift_labels)
+        ce_loss = loss
+        giou_loss = hidden_states.reshape(-1)[:0].float().sum()
+        num_valid_boxes = 0
+        lambda_box = getattr(self.config, 'lambda_box', 0.0)
+        if self.training and lambda_box > 0:
+            if bbox_coord_positions is None or gt_boxes is None:
+                raise ValueError("GIoU requires canonical bbox metadata from the MTP dataset; set lambda_box=0 to disable")
+            coord_token_ids = getattr(self.config, 'coord_token_ids', None)
+            if coord_token_ids is None:
+                raise ValueError("GIoU requires the explicit ordered coordinate token IDs")
+            num_valid_boxes = bbox_coord_positions.shape[0]
+            giou_loss = coordinate_giou_loss(
+                hidden_states, self.language_model.lm_head, coord_token_ids,
+                bbox_coord_positions, gt_boxes,
+            )
+        loss = ce_loss + lambda_box * giou_loss
         if not torch.isfinite(loss):
             raise FloatingPointError(
                 f"Non-finite loss detected before backward: loss={loss.detach().float().item()}, "
@@ -312,6 +331,14 @@ class LocateAnythingForConditionalGeneration(LocateAnythingPreTrainedModel, Gene
 
         if ignore_flag:
             loss = loss * 0.0
+            ce_loss = ce_loss * 0.0
+            giou_loss = giou_loss * 0.0
+            num_valid_boxes = 0
+
+        self._last_box_loss_metrics = (
+            ce_loss.detach().float(), giou_loss.detach().float(), loss.detach().float(),
+            loss.detach().new_tensor(num_valid_boxes, dtype=torch.float32),
+        )
         
         if not return_dict:
             output = (logits,) + outputs[1:]
