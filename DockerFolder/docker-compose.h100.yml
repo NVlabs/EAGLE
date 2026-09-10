@@ -1,0 +1,15 @@
+services:
+  eagle:
+    image: hcagrib/magi-eagle:h100
+    working_dir: /workspace/Eagle/Eagle
+    stdin_open: true
+    tty: true
+    gpus: all
+    ipc: host
+    network_mode: host
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    volumes:
+      - ..:/workspace/Eagle
+      - ${HF_HOME:-~/.cache/huggingface}:/root/.cache/huggingface

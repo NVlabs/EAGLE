@@ -51,6 +51,7 @@ USE_BACKBONE_LORA=${USE_BACKBONE_LORA:-0}
 FREEZE_LLM=${FREEZE_LLM:-True}
 FREEZE_BACKBONE=${FREEZE_BACKBONE:-True}
 FREEZE_MLP=${FREEZE_MLP:-False}
+LAMBDA_BOX=${LAMBDA_BOX:-0.1}
 
 mkdir -p "$OUTPUT_DIR"
 export NCCL_DEBUG="${NCCL_DEBUG:-INFO}"
@@ -77,6 +78,7 @@ LAUNCHER=pytorch python -m torch.distributed.run \
   --freeze_backbone "$FREEZE_BACKBONE" \
   --use_llm_lora "$USE_LLM_LORA" \
   --use_backbone_lora "$USE_BACKBONE_LORA" \
+  --lambda_box "$LAMBDA_BOX" \
   --vision_select_layer -1 \
   --dataloader_num_workers "$DATALOADER_NUM_WORKERS" \
   --bf16 True \

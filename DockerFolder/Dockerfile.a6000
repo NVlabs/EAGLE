@@ -1,0 +1,37 @@
+# MagiAttention — RTX A6000 (Ampere, sm86)
+# Build:  docker build -f Dockerfile.a6000 -t magiattention:a6000 .
+# Run:    docker run --gpus all --ipc host --network host --ulimit memlock=-1 --ulimit stack=67108864 -it magiattention:a6000
+#
+# NOT: Ampere resmi olarak "temporary workaround" seviyesinde destekleniyor.
+#      Native FFA ve magi_attn_comm Ampere'de yok; attention FFA_FA4 (flash_attn_cute) backend'i uzerinden calisir.
+ARG NGC_TAG=25.10
+FROM nvcr.io/nvidia/pytorch:${NGC_TAG}-py3
+
+ARG MAGI_REF=main
+ARG BUILD_JOBS=32
+# A6000 = sm86. Kernel'ler sm80 ile geriye uyumlu; flash_attn_cute script'i sm80 bekliyor.
+ARG FA_CUTE_ARCHS=sm80
+
+ENV MAGI_ATTENTION_BUILD_COMPUTE_CAPABILITY=86 \
+    TORCH_CUDA_ARCH_LIST="8.6" \
+    MAGI_ATTENTION_PREBUILD_FFA=0 \
+    MAGI_ATTENTION_SKIP_MAGI_ATTN_COMM_BUILD=1 \
+    MAX_JOBS=${BUILD_JOBS}
+
+WORKDIR /workspace
+RUN git clone --recursive --branch ${MAGI_REF} https://github.com/SandAI-org/MagiAttention.git
+
+WORKDIR /workspace/MagiAttention
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Ampere icin zorunlu: FFA_FA4 backend'ini saglayan flash_attn_cute
+RUN bash scripts/install_flash_attn_cute.sh ${FA_CUTE_ARCHS}
+
+RUN pip install --no-build-isolation --no-cache-dir .
+
+RUN python -c "import magi_attention; print('magi_attention', magi_attention.__version__)"
+
+# Runtime'da her zaman FA4 backend kullanilsin
+ENV MAGI_ATTENTION_FA4_BACKEND=1
+
+CMD ["/bin/bash"]

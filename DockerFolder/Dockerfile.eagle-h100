@@ -1,0 +1,20 @@
+FROM magiattention:h100
+
+ARG REQUIREMENTS_FILE=Eagle/requirements.txt
+
+ENV PIP_NO_CACHE_DIR=1 \
+    PYTHONPATH=/workspace/Eagle/Eagle
+
+WORKDIR /workspace
+
+COPY ${REQUIREMENTS_FILE} /tmp/eagle-requirements.txt
+RUN sed -i -E \
+    -e '/^(torch|torchvision)([<=>!~].*)?([[:space:]]+#.*)?$/d' \
+    -e 's/^scikit-learn==1\.2\.2$/scikit-learn>=1.5,<2/' \
+    /tmp/eagle-requirements.txt && \
+    python -m pip install --no-cache-dir --prefer-binary -r /tmp/eagle-requirements.txt && \
+    rm -f /tmp/eagle-requirements.txt
+
+WORKDIR /workspace/Eagle/Eagle
+
+CMD ["/bin/bash"]

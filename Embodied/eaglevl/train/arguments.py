@@ -14,6 +14,7 @@ class ModelArguments:
     """
     Arguments pertaining to which model/config/tokenizer we are going to fine-tune from.
     """
+    lambda_box: float = field(default=0.1, metadata={'help': 'Canonical bbox GIoU weight; 0 disables the auxiliary loss.'})
     model_name_or_path: Optional[str] = field(
         default=None,
         metadata={'help': 'Path to pretrained model or model identifier from huggingface.co/models'}
